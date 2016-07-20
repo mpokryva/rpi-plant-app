@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">RPi Plants App</string>
+    <string name="current_level_title">Current Level</string>
+    <string name="optimal_level_title">Optimal Level</string>
+    <string name="action_required_title">Action Required</string>
+    <string name="current_level">BLANK</string>
+    <string name="optimal_level">BLANK</string>
+    <string name="action_text">BLANK</string>
+
+</resources>

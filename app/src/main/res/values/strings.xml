@@ -6,5 +6,7 @@
     <string name="current_level">BLANK</string>
     <string name="optimal_level">BLANK</string>
     <string name="action_text">BLANK</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
 
 </resources>

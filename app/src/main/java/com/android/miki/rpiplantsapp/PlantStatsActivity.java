@@ -9,13 +9,16 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -124,6 +127,15 @@ public class PlantStatsActivity extends FragmentActivity {
         topChannelMenu.add("Foo");
         topChannelMenu.add("Bar");
         topChannelMenu.add("TESTING");
+        final Button addPlantButton = (Button) findViewById(R.id.add_plant_button);
+        addPlantButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AddPlantDialog addPlantDialog = new AddPlantDialog();
+                addPlantDialog.show(getSupportFragmentManager(), "addPlant");
+
+            }
+        });
         mDrawerList.invalidate();
 
 
@@ -190,7 +202,10 @@ public class PlantStatsActivity extends FragmentActivity {
 
 
 
-
+   // @Override
+   // public boolean onOptionsItemSelected(MenuItem menuItem){
+        // Do stuff
+    //}
 
 
 

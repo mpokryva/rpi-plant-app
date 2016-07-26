@@ -17,6 +17,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
     packagingOptions{
         exclude 'META-INF/DEPENDENCIES.txt'
         exclude 'META-INF/LICENSE.txt'
@@ -28,6 +29,18 @@ android {
         exclude 'META-INF/license.txt'
         exclude 'META-INF/dependencies.txt'
         exclude 'META-INF/LGPL2.1'
+    }
+    sourceSets {
+        main {
+            java {
+                exclude '**/NavigationDrawerActivity.java'
+            }
+        }
+        androidTest {
+            java {
+                exclude '**/NavigationDrawerActivity.java'
+            }
+        }
     }
 }
 

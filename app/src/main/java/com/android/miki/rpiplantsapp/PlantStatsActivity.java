@@ -2,6 +2,7 @@ package com.android.miki.rpiplantsapp;
 
 import android.app.ActionBar;
 import android.os.Message;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -89,6 +90,7 @@ public class PlantStatsActivity extends FragmentActivity {
         tabLayout.addTab(tabLayout.newTab().setText("Light"));
         tabLayout.addTab(tabLayout.newTab().setText("Temperature"));
 
+
         viewPager = (ViewPager) findViewById(R.id.pager);
         adapter = new ViewPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         // *Original code* final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
@@ -115,12 +117,14 @@ public class PlantStatsActivity extends FragmentActivity {
             }
         });
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.navigation_drawer);
-        //  Set the adapter for the list view
-       // mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, mPlantTitles));
-        // Set listener for list
-        //mDrawerLayout.setOnClickListener(new DrawerItemClickListener());
+        NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
+
+        Menu navMenu = mDrawerList.getMenu();
+        Menu topChannelMenu = navMenu.addSubMenu("Top channels");
+        topChannelMenu.add("Foo");
+        topChannelMenu.add("Bar");
+        topChannelMenu.add("TESTING");
+        mDrawerList.invalidate();
 
 
 

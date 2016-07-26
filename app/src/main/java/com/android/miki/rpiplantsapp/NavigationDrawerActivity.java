@@ -3,6 +3,9 @@ package com.android.miki.rpiplantsapp;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -14,7 +17,7 @@ import android.view.View;
 /**
  * Created by Miki on 7/21/2016.
  */
-public class NavigationDrawerActivity extends Activity implements PlantAdapter.OnItemClickListener {
+public class NavigationDrawerActivity extends FragmentActivity implements PlantAdapter.OnItemClickListener {
     private DrawerLayout mDrawerLayout;
     private RecyclerView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -106,7 +109,12 @@ public class NavigationDrawerActivity extends Activity implements PlantAdapter.O
 
     private void selectItem(int position){
         // Update the main content by replacing fragments
-        Fragment fragment = Plant.newInstance(position)
+        Fragment fragment = Plant.newInstance(position);
+
+        FragmentManager fragmentManager =  getSupportFragmentManager();
+        FragmentTransaction ft = fragmentManager.beginTransaction();
+        ft.replace(R.id.content_frame, fragment);
+        ft.commit();
     }
 
 }

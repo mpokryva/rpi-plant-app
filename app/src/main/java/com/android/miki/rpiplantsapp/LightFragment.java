@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import java.security.InvalidParameterException;
@@ -22,7 +23,9 @@ public class LightFragment extends Fragment {
     private TextView lightText;
     private final String TAG = "LightFragment";
     private boolean lightChanged;
+    private Button addButton;
     public static Handler sUpdateHandler;
+    DBHandler lightHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState){

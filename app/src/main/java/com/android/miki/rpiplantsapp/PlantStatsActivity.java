@@ -123,7 +123,7 @@ public class PlantStatsActivity extends FragmentActivity {
         NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
 
         Menu navMenu = mDrawerList.getMenu();
-        Menu topChannelMenu = navMenu.addSubMenu("Top channels");
+        final Menu topChannelMenu = navMenu.addSubMenu("Top channels");
         topChannelMenu.add("Foo");
         topChannelMenu.add("Bar");
         topChannelMenu.add("TESTING");
@@ -132,11 +132,12 @@ public class PlantStatsActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 AddPlantDialog addPlantDialog = new AddPlantDialog();
-                addPlantDialog.show(getSupportFragmentManager(), "addPlant");
+                addPlantDialog.show(getSupportFragmentManager(), "AddPlantDialog");
+
 
             }
         });
-        mDrawerList.invalidate();
+        //mDrawerList.invalidate();
 
 
 

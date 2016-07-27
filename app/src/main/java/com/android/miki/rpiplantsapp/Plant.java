@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 /**
  * Created by Miki on 7/22/2016.
  **/
-public class Plant extends Fragment {
+public class Plant {
     public static final String ARG_PLANT_NUMBER = "plant_number";
     private LightFragment light;
     private MoistureFragment moisture;
@@ -19,17 +19,14 @@ public class Plant extends Fragment {
     private String plantSpecies;
 
 
-    public Plant() {
-        // Empty constructor required for fragment subclasses
+    public Plant (String plantName, String plantSpecies) {
+        this.plantName = plantName;
+        this.plantSpecies = plantSpecies;
+
+
     }
 
-    public static Fragment newInstance(int position) {
-        Fragment fragment = new Plant();
-        Bundle args = new Bundle();
-        args.putInt(Plant.ARG_PLANT_NUMBER, position);
-        fragment.setArguments(args);
-        return fragment;
-    }
+
     /**
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,

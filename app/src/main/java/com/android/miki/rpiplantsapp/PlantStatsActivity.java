@@ -61,7 +61,7 @@ import java.util.logging.Handler;
 
 import javax.security.auth.callback.Callback;
 
-public class PlantStatsActivity extends FragmentActivity {
+public class PlantStatsActivity extends FragmentActivity implements AddPlantDialog.AddPlantDialogListener {
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -75,6 +75,8 @@ public class PlantStatsActivity extends FragmentActivity {
     private String TAG = "PlantsStatsActivity";
     private ViewPager viewPager;
     private ViewPageAdapter adapter;
+    public Menu topChannelMenu;
+    private DBHandler mDBHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,10 +125,8 @@ public class PlantStatsActivity extends FragmentActivity {
         NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
 
         Menu navMenu = mDrawerList.getMenu();
-        final Menu topChannelMenu = navMenu.addSubMenu("Top channels");
-        topChannelMenu.add("Foo");
-        topChannelMenu.add("Bar");
-        topChannelMenu.add("TESTING");
+        topChannelMenu = navMenu.addSubMenu("Plants");
+        topChannelMenu.add("Test");
         final Button addPlantButton = (Button) findViewById(R.id.add_plant_button);
         addPlantButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,11 +137,26 @@ public class PlantStatsActivity extends FragmentActivity {
 
             }
         });
-        //mDrawerList.invalidate();
+
+        // Initialize database
+        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+        mDBHandler.getReadableDatabase().
 
 
 
 
+
+
+    }
+
+    /**
+     * Handle the plant that is received.
+     * @param newPlant
+     */
+    @Override
+    public void onDialogPositiveClick(Plant newPlant){
+        String plantName = newPlant.getPlantName();
+        topChannelMenu.add(plantName);
 
 
     }
@@ -229,6 +244,8 @@ public class PlantStatsActivity extends FragmentActivity {
      return super.onOptionsItemSelected(item);
      }
      **/
+
+
 
 
 }

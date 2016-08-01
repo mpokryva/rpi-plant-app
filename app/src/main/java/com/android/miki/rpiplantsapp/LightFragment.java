@@ -19,17 +19,15 @@ import java.security.InvalidParameterException;
  */
 public class LightFragment extends Fragment {
     // Dummy light level variable
-    private int lightLevel;
     private TextView lightText;
+    private PlantStat light;
     private final String TAG = "LightFragment";
-    private boolean lightChanged;
-    private Button addButton;
     public static Handler sUpdateHandler;
-    DBHandler lightHandler;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        light = new PlantStat();
         /**
          Bundle data = getArguments();
          lightLevel = data.getInt("lightValue");
@@ -52,13 +50,7 @@ public class LightFragment extends Fragment {
         return v;
     }
 
-    public int getLightLevel() {
-        return lightLevel;
-    }
 
-    public void setLightLevel(int newLightLevel){
-        lightLevel = newLightLevel;
-    }
 
     public TextView getLightText() {
         return lightText;
@@ -68,7 +60,7 @@ public class LightFragment extends Fragment {
     public void setLightText(String newText) {
         try{
             lightText.setText(newText);
-            lightChanged = true;
+            light.setCurrentLevel(Integer.parseInt(newText));
         }
         catch (IllegalArgumentException e){
             Log.d(TAG, "Invalid parameter. Light not changed.");
@@ -76,8 +68,5 @@ public class LightFragment extends Fragment {
 
     }
 
-    public boolean isLightChanged(){
-        return lightChanged;
-    }
 
 }

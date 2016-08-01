@@ -14,4 +14,10 @@
     <string name="plant_name">Plant name</string>
     <string name="optimal_temp">Optimal temperature</string>
     <string name="plant_species">Plant species</string>
+    <string name="title_activity_navigation_drawer">NavigationDrawerAct</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.android.miki.rpiplantsapp;
 
 import android.app.ActionBar;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -22,6 +23,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 /**
@@ -60,6 +63,8 @@ import java.util.Arrays;
 import java.util.logging.Handler;
 
 import javax.security.auth.callback.Callback;
+
+
 
 public class PlantStatsActivity extends FragmentActivity implements AddPlantDialog.AddPlantDialogListener {
 
@@ -126,21 +131,19 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
         Menu navMenu = mDrawerList.getMenu();
         topChannelMenu = navMenu.addSubMenu("Plants");
-        topChannelMenu.add("Test");
         final Button addPlantButton = (Button) findViewById(R.id.add_plant_button);
         addPlantButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AddPlantDialog addPlantDialog = new AddPlantDialog();
                 addPlantDialog.show(getSupportFragmentManager(), "AddPlantDialog");
+                mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+                mDBHandler.getPlantNames();
+
 
 
             }
         });
-
-        // Initialize database
-        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
-        mDBHandler.getReadableDatabase().
 
 
 
@@ -153,13 +156,25 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
      * Handle the plant that is received.
      * @param newPlant
      */
+
+
     @Override
-    public void onDialogPositiveClick(Plant newPlant){
+    public void onDialogPositiveClick(Plant newPlant) {
         String plantName = newPlant.getPlantName();
-        topChannelMenu.add(plantName);
+        MenuItem plantMenuItem = topChannelMenu.add(plantName);
+        plantMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
 
-
+                return false;
+            }
+        });
     }
+
+
+
+
+
 
 
 
@@ -228,7 +243,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
 
 
-    /**
+
      @Override
      public boolean onOptionsItemSelected(MenuItem item) {
      // Handle action bar item clicks here. The action bar will
@@ -248,4 +263,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
 
 
+
 }
+
+

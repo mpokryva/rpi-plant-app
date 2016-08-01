@@ -34,11 +34,13 @@ android {
         main {
             java {
                 exclude '**/NavigationDrawerActivity.java'
+
             }
         }
         androidTest {
             java {
                 exclude '**/NavigationDrawerActivity.java'
+                exclude '**/PlantStatsActivity.java'
             }
         }
     }

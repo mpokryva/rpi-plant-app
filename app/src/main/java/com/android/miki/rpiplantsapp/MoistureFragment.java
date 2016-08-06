@@ -25,9 +25,6 @@ public class MoistureFragment extends StatFragment implements RealTimeUpdate {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        if (this.isVisible()) {
-            update(PlantStatsActivity.moistureKey);
-        }
 
     }
 

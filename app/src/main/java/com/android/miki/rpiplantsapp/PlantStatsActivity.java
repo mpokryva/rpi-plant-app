@@ -106,7 +106,8 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         initPubNub();
         Log.d(TAG, "initiated PubNub");
 
-
+        //FragmentManager fm = getSupportFragmentManager();
+        //LightFragment lightFragment = (LightFragment)fm.findFragmentById()
 
         //* Original code* TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);

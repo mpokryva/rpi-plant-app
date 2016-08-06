@@ -34,7 +34,6 @@ public class LightFragment extends StatFragment {
             if(LIGHT_INTENT.equals(intent.getAction())){
                 int value = intent.getIntExtra(PlantStatsActivity.lightKey, 12);
                 setStatText(String.valueOf(value));
-
             }
         }
     };
@@ -51,8 +50,10 @@ public class LightFragment extends StatFragment {
         //if(this.isVisible()) {
            // update(PlantStatsActivity.lightKey);
         //}
+
         IntentFilter filter = new IntentFilter(LIGHT_INTENT);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
+        setRetainInstance(true);
 
     }
 
@@ -67,8 +68,6 @@ public class LightFragment extends StatFragment {
     @Override
     public void onDestroy(){
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mReceiver);
-       // int lastLightValue = getStat().getCurrentLevel();
-      //  Bundle data = new Bundle();
         super.onDestroy();
     }
 

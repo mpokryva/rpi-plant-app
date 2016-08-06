@@ -3,6 +3,7 @@ package com.android.miki.rpiplantsapp;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Message;
@@ -12,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
@@ -189,6 +191,12 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         });
     }
 
+    private void sendValueToFragments(int value){
+        Intent intent = new Intent(LightFragment.getIntentKeyWord());
+        intent.putExtra(lightKey, value);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    }
+
 
 
 
@@ -219,10 +227,10 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 JsonNode lightNode = message.getMessage().findValue(lightKey); // "lightValue" is JSON key.
                 lightMessage = lightNode.asInt();
                 Log.d(TAG, "Got message as int");
+                sendValueToFragments(lightMessage);
                 //Bundle data = new Bundle();
                 //data.putInt(lightKey, lightMessage);
-                if(viewPager.getCurrentItem()==1)
-                    adapter.getItem(1);
+
 
             }
 

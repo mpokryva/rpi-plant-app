@@ -26,12 +26,21 @@ public class ViewPageAdapter extends FragmentStatePagerAdapter {
         switch (position){
             case 0:
                 MoistureFragment moistureTab = new MoistureFragment();
+                if (moistureTab != null){
+                    moistureTab.update();
+                }
                 return moistureTab;
             case 1:
                 LightFragment lightTab = new LightFragment();
+                if (lightTab != null){
+                    lightTab.update();
+                }
                 return lightTab;
             case 2:
                 TemperatureFragment tempTab = new TemperatureFragment();
+                if (lightTab != null){
+                    tempTab.update();
+                }
                 return tempTab;
             default:
                 return null;

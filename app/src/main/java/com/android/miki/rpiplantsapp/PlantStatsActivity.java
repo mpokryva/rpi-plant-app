@@ -1,6 +1,9 @@
 package com.android.miki.rpiplantsapp;
 
 import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
@@ -8,6 +11,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
@@ -59,6 +63,7 @@ import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
 
 
 import java.lang.reflect.Member;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Handler;
 
@@ -80,8 +85,15 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     private String TAG = "PlantsStatsActivity";
     private ViewPager viewPager;
     private ViewPageAdapter adapter;
-    public Menu topChannelMenu;
+    public Menu plantsMenu;
     private DBHandler mDBHandler;
+    private ArrayList<Plant> mPlants;
+    public static String lightKey = "lightValue";
+    public static String moistureKey = "moistureValue";
+    public static String tempKey = "tempValue";
+    private int lightMessage;
+    private int moistureMessage;
+    private int tempMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,11 +112,12 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         tabLayout.addTab(tabLayout.newTab().setText("Light"));
         tabLayout.addTab(tabLayout.newTab().setText("Temperature"));
 
-
         viewPager = (ViewPager) findViewById(R.id.pager);
         adapter = new ViewPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
-        // *Original code* final ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        // *Original code* final ViewPageAdapter adapter = new ViewPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
+
+        viewPager.setOffscreenPageLimit(3);
+
+
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -114,6 +127,8 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
+                int limit = viewPager.getOffscreenPageLimit();
+
             }
 
             @Override
@@ -130,25 +145,24 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
 
         Menu navMenu = mDrawerList.getMenu();
-        topChannelMenu = navMenu.addSubMenu("Plants");
+        plantsMenu = navMenu.addSubMenu("Plants");
+        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+        mPlants = mDBHandler.makePlants();
+
+        for(int i=0; i<mPlants.size(); i++){
+            createPlantMenuItem(mPlants.get(i));
+        }
+
+
+
         final Button addPlantButton = (Button) findViewById(R.id.add_plant_button);
         addPlantButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AddPlantDialog addPlantDialog = new AddPlantDialog();
                 addPlantDialog.show(getSupportFragmentManager(), "AddPlantDialog");
-                mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
-                mDBHandler.getPlantNames();
-
-
-
             }
         });
-
-
-
-
-
 
     }
 
@@ -160,8 +174,12 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
     @Override
     public void onDialogPositiveClick(Plant newPlant) {
-        String plantName = newPlant.getPlantName();
-        MenuItem plantMenuItem = topChannelMenu.add(plantName);
+        createPlantMenuItem(newPlant);
+    }
+
+    private void createPlantMenuItem(Plant plant){
+        String plantName = plant.getPlantName();
+        MenuItem plantMenuItem = plantsMenu.add(plantName);
         plantMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -198,17 +216,14 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
             @Override
             public void message(PubNub pubnub, PNMessageResult message) {
-                JsonNode lightNode = message.getMessage().findValue("lightValue"); // "lightValue" is JSON key.
-                int newLight = lightNode.asInt();
+                JsonNode lightNode = message.getMessage().findValue(lightKey); // "lightValue" is JSON key.
+                lightMessage = lightNode.asInt();
                 Log.d(TAG, "Got message as int");
-                Bundle data = new Bundle();
-                data.putInt("lightMessage", newLight);
-                Message message1 = new Message();
-                message1.setData(data);
-                android.os.Handler handler = LightFragment.sUpdateHandler;
-                if (handler != null){
-                    handler.sendMessage(message1);
-                }
+                //Bundle data = new Bundle();
+                //data.putInt(lightKey, lightMessage);
+                if(viewPager.getCurrentItem()==1)
+                    adapter.getItem(1);
+
             }
 
             @Override
@@ -258,9 +273,66 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
      return super.onOptionsItemSelected(item);
      }
-     **/
 
 
+
+
+
+
+
+
+    public class ViewPageAdapter extends FragmentStatePagerAdapter {
+        int mNumOfTabs;
+
+        public ViewPageAdapter(FragmentManager fm, int numOfTabs){
+            super(fm);
+            this.mNumOfTabs = numOfTabs;
+        }
+
+        @Override
+        public Fragment getItem(int position){
+            switch (position){
+                case 0:
+                    MoistureFragment moistureTab = new MoistureFragment();
+                        Bundle moistureBundle = new Bundle();
+                        moistureBundle.putInt(moistureKey, moistureMessage);
+                        moistureTab.setArguments(moistureBundle);
+                        return moistureTab;
+
+                case 1:
+                    LightFragment lightTab = new LightFragment();
+                   // if (lightTab.isVisible()) {
+                        Bundle lightBundle = new Bundle();
+                        lightBundle.putInt(lightKey, lightMessage);
+                        lightTab.setArguments(lightBundle);
+                    //}
+                        return lightTab;
+                case 2:
+
+                    TemperatureFragment tempTab = new TemperatureFragment();
+                        Bundle tempBundle = new Bundle();
+                        tempBundle.putInt(tempKey, tempMessage);
+                        tempTab.setArguments(tempBundle);
+                    return tempTab;
+
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public int getCount(){
+            return mNumOfTabs;
+        }
+
+
+
+
+
+
+
+
+    }
 
 
 

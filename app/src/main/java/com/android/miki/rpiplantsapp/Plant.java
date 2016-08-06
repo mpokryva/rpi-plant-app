@@ -12,9 +12,9 @@ import android.view.ViewGroup;
  **/
 public class Plant {
     public static final String ARG_PLANT_NUMBER = "plant_number";
-    private LightFragment light;
-    private MoistureFragment moisture;
-    private TemperatureFragment temperature;
+    private LightFragment light = new LightFragment();
+    private MoistureFragment moisture = new MoistureFragment();
+    private TemperatureFragment temperature = new TemperatureFragment();
     private String plantName;
     private String plantSpecies;
 
@@ -35,15 +35,15 @@ public class Plant {
     }
     **/
 
-    public LightFragment getLight() {
+    public LightFragment getLightFrag() {
         return light;
     }
 
-    public MoistureFragment getMoisture() {
+    public MoistureFragment getMoistureFrag() {
         return moisture;
     }
 
-    public TemperatureFragment getTemperature() {
+    public TemperatureFragment getTempFrag() {
         return temperature;
     }
 

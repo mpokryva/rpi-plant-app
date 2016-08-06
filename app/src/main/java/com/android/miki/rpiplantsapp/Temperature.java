@@ -6,13 +6,5 @@ package com.android.miki.rpiplantsapp;
  * Created to follow along with Big Nerd Ranch book.
  */
 public class Temperature {
-    private int temperatureLevel;
 
-    public Temperature(){
-        // Do something.
-    }
-
-    public int getTemperatureLevel(){
-        return temperatureLevel;
-    }
 }

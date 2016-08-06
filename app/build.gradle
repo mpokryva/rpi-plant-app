@@ -40,7 +40,8 @@ android {
         androidTest {
             java {
                 exclude '**/NavigationDrawerActivity.java'
-                exclude '**/PlantStatsActivity.java'
+                exclude '**/NavigationDrawerAct.java'
+                exclude '**/ViewPageAdapter.java'
             }
         }
     }

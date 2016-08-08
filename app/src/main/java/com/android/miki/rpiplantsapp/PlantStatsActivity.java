@@ -71,6 +71,7 @@ import java.util.logging.Handler;
 
 import javax.security.auth.callback.Callback;
 
+import retrofit2.http.DELETE;
 
 
 public class PlantStatsActivity extends FragmentActivity implements AddPlantDialog.AddPlantDialogListener {
@@ -96,6 +97,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     private int lightMessage;
     private int moistureMessage;
     private int tempMessage;
+    private Plant selectedPlant;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,7 +122,6 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
         viewPager.setOffscreenPageLimit(3);
 
-
         viewPager.setAdapter(adapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
@@ -130,7 +131,6 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
-                int limit = viewPager.getOffscreenPageLimit();
 
             }
 
@@ -147,9 +147,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
         NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
 
-        Menu navMenu = mDrawerList.getMenu();
+            Menu navMenu = mDrawerList.getMenu();
         plantsMenu = navMenu.addSubMenu("Plants");
-        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1); ////Uncomment this
+        SQLiteDatabase db = mDBHandler.getWritableDatabase(); ///////////*************delete
+        db.delete("plants", null, null); //////////////*******delete
         mPlants = mDBHandler.makePlants();
 
         for(int i=0; i<mPlants.size(); i++){
@@ -167,6 +169,8 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             }
         });
 
+
+
     }
 
     /**
@@ -180,13 +184,18 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         createPlantMenuItem(newPlant);
     }
 
-    private void createPlantMenuItem(Plant plant){
+    private void createPlantMenuItem(final Plant plant){
         String plantName = plant.getPlantName();
         MenuItem plantMenuItem = plantsMenu.add(plantName);
         plantMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-
+                //Loads tabs
+                selectedPlant = plant;
+                adapter.getItem(0);
+                adapter.getItem(1);
+                adapter.getItem(2);
+                selectedPlant = null;
                 return false;
             }
         });
@@ -284,17 +293,22 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
      }
 
 
-
-
-
-
-
+    /**
+     * Can probably be moved to its own class. Also, bundle code in each case are
+     * probably unnecessary.
+     */
 
     public class ViewPageAdapter extends FragmentStatePagerAdapter {
         int mNumOfTabs;
+        FragmentManager mSFragmentManager;
+        MoistureFragment currentMoistureFragment;
+        LightFragment currentLightFragment;
+        TemperatureFragment currentTempFragment;
+        boolean getItemNeverCalled = true;
 
         public ViewPageAdapter(FragmentManager fm, int numOfTabs){
             super(fm);
+            mSFragmentManager = fm;
             this.mNumOfTabs = numOfTabs;
         }
 
@@ -302,32 +316,54 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         public Fragment getItem(int position){
             switch (position){
                 case 0:
-                    MoistureFragment moistureTab = new MoistureFragment();
-                        Bundle moistureBundle = new Bundle();
-                        moistureBundle.putInt(moistureKey, moistureMessage);
-                        moistureTab.setArguments(moistureBundle);
-                        return moistureTab;
+                    if(!getItemNeverCalled){
+                        mSFragmentManager.beginTransaction().remove(currentMoistureFragment).commit();
+                        currentMoistureFragment = selectedPlant.getMoistureFrag();
+                        notifyDataSetChanged();
+                        return currentMoistureFragment;
 
+                    }
+                    else {
+                        MoistureFragment moistureTab = new MoistureFragment();
+                        currentMoistureFragment = moistureTab;
+                        return currentMoistureFragment;
+                    }
                 case 1:
-                    LightFragment lightTab = new LightFragment();
-                   // if (lightTab.isVisible()) {
-                        Bundle lightBundle = new Bundle();
-                        lightBundle.putInt(lightKey, lightMessage);
-                        lightTab.setArguments(lightBundle);
-                    //}
-                        return lightTab;
+                    if(!getItemNeverCalled){
+                        notifyDataSetChanged();
+                        mSFragmentManager.beginTransaction().remove(currentLightFragment).commit();
+                        currentLightFragment = selectedPlant.getLightFrag();
+                        notifyDataSetChanged();
+                        return currentLightFragment;
+                    }
+                    else {
+                        LightFragment lightTab = new LightFragment();
+                        currentLightFragment = lightTab;
+                        return currentLightFragment;
+                    }
                 case 2:
-
-                    TemperatureFragment tempTab = new TemperatureFragment();
+                    if(!getItemNeverCalled){
+                        mSFragmentManager.beginTransaction().remove(currentTempFragment).commit();
+                        currentTempFragment = selectedPlant.getTempFrag();
+                        notifyDataSetChanged();
+                        return currentTempFragment;
+                    }
+                    else {
+                        TemperatureFragment tempTab = new TemperatureFragment();
+                        currentTempFragment = tempTab;
                         Bundle tempBundle = new Bundle();
                         tempBundle.putInt(tempKey, tempMessage);
                         tempTab.setArguments(tempBundle);
-                    return tempTab;
+                        getItemNeverCalled = false;
+                        return currentTempFragment;
+                    }
 
                 default:
                     return null;
             }
         }
+
+
 
         @Override
         public int getCount(){

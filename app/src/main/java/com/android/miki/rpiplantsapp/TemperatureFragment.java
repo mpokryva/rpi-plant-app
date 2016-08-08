@@ -17,7 +17,6 @@ import android.widget.TextView;
 public class TemperatureFragment extends StatFragment implements RealTimeUpdate {
     // Dummy light level variable
     private TextView tempText;
-    private PlantStat temp = new PlantStat();
     private final String TAG = "TempFragment";
     public static Handler sUpdateHandler;
 
@@ -32,8 +31,11 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        View v = inflater.inflate(R.layout.fragment_light, container, false);
-        setTextView((TextView)v.findViewById(R.id.current_level_light));
+        View v = inflater.inflate(R.layout.fragment_temp, container, false);
+        int currentStat = getStat().getCurrentLevel();
+        int optimalStat = getStat().getOptimalLevel();
+        initializeTexts(v,R.id.current_level_temp, R.id.optimal_level_temp, currentStat, optimalStat);
+        //setTextView((TextView)v.findViewById(R.id.current_level_light));
         return v;
     }
 }

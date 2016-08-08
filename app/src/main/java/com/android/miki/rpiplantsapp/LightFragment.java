@@ -25,7 +25,6 @@ import java.security.InvalidParameterException;
 public class LightFragment extends StatFragment {
     // Dummy light level variable
     private TextView lightText;
-    private PlantStat light = new PlantStat();
     private final String TAG = "LightFragment";
     private static final String LIGHT_INTENT = "lightIntent";
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
@@ -33,7 +32,7 @@ public class LightFragment extends StatFragment {
         public void onReceive(Context context, Intent intent) {
             if(LIGHT_INTENT.equals(intent.getAction())){
                 int value = intent.getIntExtra(PlantStatsActivity.lightKey, 12);
-                setStatText(String.valueOf(value));
+                setCurrentStatText(String.valueOf(value));
             }
         }
     };
@@ -53,15 +52,21 @@ public class LightFragment extends StatFragment {
 
         IntentFilter filter = new IntentFilter(LIGHT_INTENT);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
-        setRetainInstance(true);
+        //setRetainInstance(true);
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_light, container, false);
-        setTextView((TextView)v.findViewById(R.id.current_level_light));
-        setStatText(String.valueOf(getStat().getCurrentLevel()));
+        int currentStat = getStat().getCurrentLevel();
+        int optimalStat = getStat().getOptimalLevel();
+        initializeTexts(v,R.id.current_level_light, R.id.optimal_level_light, currentStat, optimalStat);
+        //setCurrentTextView((TextView)v.findViewById(R.id.current_level_light));
+        //setOptimalTextView((TextView)v.findViewById(R.id.current_level_light));
+
+      //  setCurrentStatText(String.valueOf(getStat().getCurrentLevel()));
+        //setOptimalStatText(String.valueOf(getStat().getOptimalLevel()));
         return v;
     }
 

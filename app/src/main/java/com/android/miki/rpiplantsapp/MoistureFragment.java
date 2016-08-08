@@ -16,7 +16,6 @@ import android.widget.TextView;
  */
 public class MoistureFragment extends StatFragment implements RealTimeUpdate {
     private TextView moistureText;
-    private PlantStat moisture = new PlantStat();
     private final String TAG = "MoistureFragment";
     public static Handler sUpdateHandler;
 
@@ -30,8 +29,11 @@ public class MoistureFragment extends StatFragment implements RealTimeUpdate {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        View v = inflater.inflate(R.layout.fragment_light, container, false);
-        setTextView((TextView)v.findViewById(R.id.current_level_light));
+        View v = inflater.inflate(R.layout.fragment_moisture, container, false);
+        int currentStat = getStat().getCurrentLevel();
+        int optimalStat = getStat().getOptimalLevel();
+        initializeTexts(v, R.id.current_level_moisture, R.id.optimal_level_moisture, currentStat, optimalStat);
+       // setTextView((TextView)v.findViewById(R.id.current_level_light));
         return v;
     }
 

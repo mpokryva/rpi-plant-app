@@ -195,7 +195,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 adapter.getItem(0);
                 adapter.getItem(1);
                 adapter.getItem(2);
-                selectedPlant = null;
+               // selectedPlant = null;
                 return false;
             }
         });
@@ -300,7 +300,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
     public class ViewPageAdapter extends FragmentStatePagerAdapter {
         int mNumOfTabs;
-        FragmentManager mSFragmentManager;
+        FragmentManager mFragmentManager;
         MoistureFragment currentMoistureFragment;
         LightFragment currentLightFragment;
         TemperatureFragment currentTempFragment;
@@ -308,7 +308,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
         public ViewPageAdapter(FragmentManager fm, int numOfTabs){
             super(fm);
-            mSFragmentManager = fm;
+            mFragmentManager = fm;
             this.mNumOfTabs = numOfTabs;
         }
 
@@ -316,45 +316,46 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         public Fragment getItem(int position){
             switch (position){
                 case 0:
-                    if(!getItemNeverCalled){
-                        mSFragmentManager.beginTransaction().remove(currentMoistureFragment).commit();
-                        currentMoistureFragment = selectedPlant.getMoistureFrag();
-                        notifyDataSetChanged();
+                    if(currentMoistureFragment == null){
+                        MoistureFragment moistureTab = new MoistureFragment();
+                        currentMoistureFragment = moistureTab;
                         return currentMoistureFragment;
 
                     }
                     else {
-                        MoistureFragment moistureTab = new MoistureFragment();
-                        currentMoistureFragment = moistureTab;
+                        mFragmentManager.beginTransaction().remove(currentMoistureFragment).commit();
+                        int optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
+                        currentMoistureFragment = (MoistureFragment) MoistureFragment.newInstance(moistureKey, optimalMoisture);
+                        notifyDataSetChanged();
                         return currentMoistureFragment;
                     }
                 case 1:
-                    if(!getItemNeverCalled){
-                        notifyDataSetChanged();
-                        mSFragmentManager.beginTransaction().remove(currentLightFragment).commit();
-                        currentLightFragment = selectedPlant.getLightFrag();
-                        notifyDataSetChanged();
-                        return currentLightFragment;
-                    }
-                    else {
+                    if(currentLightFragment == null){
                         LightFragment lightTab = new LightFragment();
                         currentLightFragment = lightTab;
                         return currentLightFragment;
                     }
-                case 2:
-                    if(!getItemNeverCalled){
-                        mSFragmentManager.beginTransaction().remove(currentTempFragment).commit();
-                        currentTempFragment = selectedPlant.getTempFrag();
+                    else {
+                        mFragmentManager.beginTransaction().remove(currentLightFragment).commit();
+                        //currentLightFragment = selectedPlant.getLightFrag();
+                        int optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
+                        currentLightFragment = (LightFragment) LightFragment.newInstance(moistureKey, optimalLight);
                         notifyDataSetChanged();
+                        return currentLightFragment;
+                    }
+                case 2:
+                    if(currentTempFragment == null){
+                        TemperatureFragment tempTab = new TemperatureFragment();
+                        currentTempFragment = tempTab;;
+                        getItemNeverCalled = false;
                         return currentTempFragment;
                     }
                     else {
-                        TemperatureFragment tempTab = new TemperatureFragment();
-                        currentTempFragment = tempTab;
-                        Bundle tempBundle = new Bundle();
-                        tempBundle.putInt(tempKey, tempMessage);
-                        tempTab.setArguments(tempBundle);
-                        getItemNeverCalled = false;
+                        mFragmentManager.beginTransaction().remove(currentTempFragment).commit();
+                       // currentTempFragment = selectedPlant.getTempFrag();
+                        int optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
+                        currentTempFragment =  (TemperatureFragment) TemperatureFragment.newInstance(moistureKey, optimalTemp);
+                        notifyDataSetChanged();
                         return currentTempFragment;
                     }
 
@@ -370,10 +371,32 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             return mNumOfTabs;
         }
 
+        @Override
+        public int getItemPosition(Object object){
+           if (object instanceof MoistureFragment) {
+               if (((MoistureFragment) object).getStat().getOptimalLevel() == 0) {
+                   Log.d(TAG, "returned POSITION_NONE");
+                   return POSITION_NONE;
+               }
+               else
+                    return POSITION_UNCHANGED;
+           }
 
+            if (object instanceof TemperatureFragment)
+                if (((TemperatureFragment) object).getStat().getOptimalLevel() == 0)
+                    return POSITION_NONE;
+                else
+                    return POSITION_UNCHANGED;
+            if (object instanceof LightFragment)
+                if (((LightFragment) object).getStat().getOptimalLevel() == 0)
+                    return POSITION_NONE;
+                else
+                    return POSITION_UNCHANGED;
+            else
+                Log.d(TAG, "returned FINAL ELSE");
+                return POSITION_UNCHANGED;
 
-
-
+        }
 
 
 

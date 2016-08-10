@@ -25,6 +25,7 @@ public class MoistureFragment extends StatFragment implements RealTimeUpdate {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
 
+
     }
 
     @Override
@@ -35,6 +36,14 @@ public class MoistureFragment extends StatFragment implements RealTimeUpdate {
         initializeTexts(v, R.id.current_level_moisture, R.id.optimal_level_moisture, currentStat, optimalStat);
        // setTextView((TextView)v.findViewById(R.id.current_level_light));
         return v;
+    }
+
+    protected static MoistureFragment newInstance(String statKey, int stat){
+        MoistureFragment statFragment = new MoistureFragment();
+        Bundle args = new Bundle();
+        args.putInt(statKey, stat);
+        statFragment.setArguments(args);
+        return statFragment;
     }
 
 }

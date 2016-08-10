@@ -76,6 +76,15 @@ public class LightFragment extends StatFragment {
         super.onDestroy();
     }
 
+    protected static LightFragment newInstance(String statKey, int stat){
+        LightFragment statFragment = new LightFragment();
+        Bundle args = new Bundle();
+        args.putInt(statKey, stat);
+        statFragment.setArguments(args);
+
+        return statFragment;
+    }
+
 
     /**
     public TextView getLightText() {

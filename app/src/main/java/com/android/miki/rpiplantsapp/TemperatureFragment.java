@@ -38,4 +38,13 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
         //setTextView((TextView)v.findViewById(R.id.current_level_light));
         return v;
     }
+
+    protected static TemperatureFragment newInstance(String statKey, int stat){
+        TemperatureFragment statFragment = new TemperatureFragment();
+        Bundle args = new Bundle();
+        args.putInt(statKey, stat);
+        statFragment.setArguments(args);
+
+        return statFragment;
+    }
 }

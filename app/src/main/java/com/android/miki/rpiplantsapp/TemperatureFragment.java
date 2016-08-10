@@ -24,7 +24,7 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         if (this.isVisible()) {
-            update(PlantStatsActivity.lightKey);
+            update(PlantStatsActivity.tempKey);
         }
 
     }

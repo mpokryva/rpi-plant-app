@@ -49,7 +49,9 @@ public class LightFragment extends StatFragment {
         //if(this.isVisible()) {
            // update(PlantStatsActivity.lightKey);
         //}
-
+        if (getArguments() != null){
+            update(PlantStatsActivity.lightKey);
+        }
         IntentFilter filter = new IntentFilter(LIGHT_INTENT);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
         //setRetainInstance(true);

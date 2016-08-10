@@ -23,6 +23,7 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+
     }
 
     @Override

@@ -12,6 +12,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
@@ -192,9 +193,10 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             public boolean onMenuItemClick(MenuItem item) {
                 //Loads tabs
                 selectedPlant = plant;
-                adapter.getItem(0);
-                adapter.getItem(1);
-                adapter.getItem(2);
+                int optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
+                int optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
+                int optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
+                adapter.updateCurentFrags(optimalMoisture, optimalLight, optimalTemp);
                // selectedPlant = null;
                 return false;
             }
@@ -304,6 +306,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         MoistureFragment currentMoistureFragment;
         LightFragment currentLightFragment;
         TemperatureFragment currentTempFragment;
+        boolean notifyChangesNeverCalled = true;
         boolean getItemNeverCalled = true;
 
         public ViewPageAdapter(FragmentManager fm, int numOfTabs){
@@ -323,10 +326,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
                     }
                     else {
-                        mFragmentManager.beginTransaction().remove(currentMoistureFragment).commit();
+                       // mFragmentManager.beginTransaction().remove(currentMoistureFragment).commit();
                         int optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
                         currentMoistureFragment = (MoistureFragment) MoistureFragment.newInstance(moistureKey, optimalMoisture);
-                        notifyDataSetChanged();
+                            //notifyDataSetChanged();
+
                         return currentMoistureFragment;
                     }
                 case 1:
@@ -336,11 +340,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                         return currentLightFragment;
                     }
                     else {
-                        mFragmentManager.beginTransaction().remove(currentLightFragment).commit();
+                        //mFragmentManager.beginTransaction().remove(currentLightFragment).commit();
                         //currentLightFragment = selectedPlant.getLightFrag();
                         int optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
                         currentLightFragment = (LightFragment) LightFragment.newInstance(moistureKey, optimalLight);
-                        notifyDataSetChanged();
+                       // notifyDataSetChanged();
                         return currentLightFragment;
                     }
                 case 2:
@@ -351,11 +355,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                         return currentTempFragment;
                     }
                     else {
-                        mFragmentManager.beginTransaction().remove(currentTempFragment).commit();
+                        //mFragmentManager.beginTransaction().remove(currentTempFragment).commit();
                        // currentTempFragment = selectedPlant.getTempFrag();
                         int optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
                         currentTempFragment =  (TemperatureFragment) TemperatureFragment.newInstance(moistureKey, optimalTemp);
-                        notifyDataSetChanged();
+                        //notifyDataSetChanged();
                         return currentTempFragment;
                     }
 
@@ -371,31 +375,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             return mNumOfTabs;
         }
 
-        @Override
-        public int getItemPosition(Object object){
-           if (object instanceof MoistureFragment) {
-               if (((MoistureFragment) object).getStat().getOptimalLevel() == 0) {
-                   Log.d(TAG, "returned POSITION_NONE");
-                   return POSITION_NONE;
-               }
-               else
-                    return POSITION_UNCHANGED;
-           }
 
-            if (object instanceof TemperatureFragment)
-                if (((TemperatureFragment) object).getStat().getOptimalLevel() == 0)
-                    return POSITION_NONE;
-                else
-                    return POSITION_UNCHANGED;
-            if (object instanceof LightFragment)
-                if (((LightFragment) object).getStat().getOptimalLevel() == 0)
-                    return POSITION_NONE;
-                else
-                    return POSITION_UNCHANGED;
-            else
-                Log.d(TAG, "returned FINAL ELSE");
-                return POSITION_UNCHANGED;
-
+        public void updateCurentFrags(int moistureValue, int lightValue, int tempValue){
+            currentMoistureFragment.setOptimalStatText(String.valueOf(moistureValue));
+            currentLightFragment.setOptimalStatText(String.valueOf(lightValue));
+            currentTempFragment.setOptimalStatText(String.valueOf(tempValue));
         }
 
 
@@ -405,5 +389,40 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

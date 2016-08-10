@@ -196,7 +196,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 int optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
                 int optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
                 int optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
-                adapter.updateCurentFrags(optimalMoisture, optimalLight, optimalTemp);
+                adapter.updateCurrentFrags(optimalMoisture, optimalLight, optimalTemp);
                // selectedPlant = null;
                 return false;
             }
@@ -376,7 +376,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         }
 
 
-        public void updateCurentFrags(int moistureValue, int lightValue, int tempValue){
+        public void updateCurrentFrags(int moistureValue, int lightValue, int tempValue){
             currentMoistureFragment.setOptimalStatText(String.valueOf(moistureValue));
             currentLightFragment.setOptimalStatText(String.valueOf(lightValue));
             currentTempFragment.setOptimalStatText(String.valueOf(tempValue));

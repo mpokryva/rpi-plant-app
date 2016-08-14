@@ -42,7 +42,6 @@ public class AddPlantDialog extends DialogFragment {
         optimalMoistureEdit = (EditText) view.findViewById(R.id.optimal_moisture_edit);
         optimalLightEdit = (EditText) view.findViewById(R.id.optimal_light_edit);
         builder.setView(view);
-                //.setTitle(R.string.add_plant) // Remove either message or title
                 builder.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

@@ -22,4 +22,11 @@
     <string name="action_settings">Settings</string>
     <string name="optimal_light">Optimal light</string>
     <string name="optimal_moisture">Optimal moisture</string>
+    <string name="pubnub_subscribe_key">PubNub subscribe key</string>
+    <string name="pubnub_publish_key">PubNub publish key</string>
+    <string name="temp_switch_text">Toggle temperature</string>
+    <string name="settings">Settings</string>
+    <string name="ok">Ok</string>
+    <string name="channel">Channel</string>
+
 </resources>

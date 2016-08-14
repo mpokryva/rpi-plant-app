@@ -88,39 +88,4 @@ public class LightFragment extends StatFragment {
     }
 
 
-    /**
-    public TextView getLightText() {
-        return lightText;
-    }
-     **/
-
-
-    /**
-    public void setLightText(String newText) {
-        try{
-            getStatText().setText(newText);
-            getStat().setCurrentLevel(Integer.parseInt(newText));
-        }
-        catch (IllegalArgumentException e){
-            Log.d(TAG, "Invalid parameter. Light not changed.");
-        }
-
-    }
-     **/
-
-    /**
-    public PlantStat getLightStat(){
-        return light;
-    }
-     **/
-
-    /**
-    public static LightFragment newInstance(){
-        LightFragment
-    }
-     **/
-
-
-
-
 }

@@ -44,7 +44,9 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
 
     public void setCurrentStatText(String newText) {
         try{
-            currentStatText.setText(newText);
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newCurrentText = newText + " " + activity.getTempUnit();
+            currentStatText.setText(newCurrentText);
             mStat.setCurrentLevel(Integer.parseInt(newText));
         }
         catch (IllegalArgumentException e){
@@ -55,7 +57,9 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
 
     public void setOptimalStatText(String newText) {
         try{
-            optimalStatText.setText(newText);
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newOptimalText = newText + " " + activity.getTempUnit();
+            optimalStatText.setText(newOptimalText);
             mStat.setOptimalLevel(Integer.parseInt(newText));
         }
         catch (IllegalArgumentException e){

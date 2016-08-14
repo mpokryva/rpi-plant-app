@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Message;
@@ -81,9 +82,9 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     private ListView mDrawerList;
     private PubNub mPubNub;
     private String[] mPlantTitles;
-    private static final String PUBLISH_KEY = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
-    private static final String SUBSCRIBE_KEY ="sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
-    private static final String CHANNEL = "py-light";
+    private static String PUBLISH_KEY = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
+    private static String SUBSCRIBE_KEY ="sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
+    private static String CHANNEL = "py-light";
     private long lastUpdate = System.currentTimeMillis();
     private TabLayout tabLayout;
     private String TAG = "PlantsStatsActivity";
@@ -99,6 +100,12 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     private int moistureMessage;
     private int tempMessage;
     private Plant selectedPlant;
+    private String celsius = "°C";
+    private String fahrenheit = "°F";
+    private String tempUnit;
+    private boolean isFahrenheit;
+    static final int TEMP_CHANGE_REQUEST = 1;
+    static String SETTINGS_INTENT_KEY = "settingIntentKey";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +115,8 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         Log.d(TAG, "testLog");
         initPubNub();
         Log.d(TAG, "initiated PubNub");
+
+        setTempUnit(fahrenheit);
 
         //FragmentManager fm = getSupportFragmentManager();
         //LightFragment lightFragment = (LightFragment)fm.findFragmentById()
@@ -170,6 +179,14 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             }
         });
 
+        final Button settingsButton = (Button) findViewById(R.id.settings_button);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startSettingsActivity(v);
+            }
+        });
+
 
 
     }
@@ -209,6 +226,61 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
+    public void startSettingsActivity(View view){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        intent.putExtra(SETTINGS_INTENT_KEY, isFahrenheit);
+        startActivityForResult(intent, TEMP_CHANGE_REQUEST);
+    }
+
+    public String getTempUnit(){
+        return tempUnit;
+    }
+
+
+    /**
+     * Should probably delete this method
+     * @param newTempUnit
+     */
+    private void setTempUnit(String newTempUnit){
+        if (newTempUnit.equals(fahrenheit) || newTempUnit.equals(celsius)){
+            if (newTempUnit.equals(fahrenheit)){
+                isFahrenheit = true;
+            }
+            else {
+                isFahrenheit = false;
+            }
+            tempUnit = newTempUnit;
+        }
+    }
+
+    private void setTempUnit(boolean isFahrenheit){
+       if (isFahrenheit){
+           tempUnit = fahrenheit;
+       }
+        else{
+           tempUnit = celsius;
+       }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (requestCode == TEMP_CHANGE_REQUEST){
+            // Making sure requrset was successful
+            if (resultCode == RESULT_OK){
+                Bundle receivedData = data.getExtras();
+                String publishKey = receivedData.getString(SettingsActivity.PUBLISH_INTENT_KEY);
+                String subKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
+                boolean isFahrenheit = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
+
+                PUBLISH_KEY = publishKey;
+                SUBSCRIBE_KEY = subKey;
+                this.isFahrenheit = isFahrenheit;
+
+
+
+            }
+        }
+    }
 
 
 

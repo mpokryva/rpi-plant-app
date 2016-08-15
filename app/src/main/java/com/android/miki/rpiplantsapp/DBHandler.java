@@ -31,6 +31,10 @@ public class DBHandler extends SQLiteOpenHelper {
     public static final String COLUMN_LAST_LIGHT = "last_light";
     public static final String COLUMN_LAST_MOISTURE = "last_moisture";
     public static final String COLUMN_LAST_TEMP = "last_temp";
+    /**
+     * Put this column into a different table. Along with channel, and pub & sub keys.
+    public static final String COLUMN_TEMP_UNIT = "temp_unit";
+     **/
     public static final String[] COLUMNS = {COLUMN_PLANT_NAME, COLUMN_PLANT_SPECIES, COLUMN_CURRENT_LIGHT, COLUMN_CURRENT_MOISTURE,
             COLUMN_CURRENT_TEMP, COLUMN_OPTIMAL_LIGHT, COLUMN_OPTIMAL_MOISTURE, COLUMN_OPTIMAL_TEMP};
     public static final String[] COLUMNS_CURRENT_STATS = {COLUMN_CURRENT_LIGHT, COLUMN_CURRENT_MOISTURE, COLUMN_CURRENT_TEMP};

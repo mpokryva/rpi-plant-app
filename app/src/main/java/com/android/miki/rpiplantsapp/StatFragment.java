@@ -103,4 +103,11 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
 
         return statFragment;
     }
+
+    public void refresh(){
+        String currentStat = String.valueOf(getStat().getCurrentLevel());
+        String optimalStat = String.valueOf(getStat().getOptimalLevel());
+        setCurrentStatText(currentStat);
+        setOptimalStatText(optimalStat);
+    }
 }

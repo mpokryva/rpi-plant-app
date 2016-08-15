@@ -82,9 +82,9 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     private ListView mDrawerList;
     private PubNub mPubNub;
     private String[] mPlantTitles;
-    private static String PUBLISH_KEY = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
-    private static String SUBSCRIBE_KEY ="sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
-    private static String CHANNEL = "py-light";
+    private static String publishKey = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
+    private static String subscribeKey ="sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
+    private static String channel = "py-light";
     private long lastUpdate = System.currentTimeMillis();
     private TabLayout tabLayout;
     private String TAG = "PlantsStatsActivity";
@@ -213,7 +213,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 int optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
                 int optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
                 int optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
-                adapter.updateCurrentFrags(optimalMoisture, optimalLight, optimalTemp);
+                adapter.updateCurrentFragsOptimal(optimalMoisture, optimalLight, optimalTemp);
                // selectedPlant = null;
                 return false;
             }
@@ -228,7 +228,10 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
     public void startSettingsActivity(View view){
         Intent intent = new Intent(this, SettingsActivity.class);
-        intent.putExtra(SETTINGS_INTENT_KEY, isFahrenheit);
+        intent.putExtra(SettingsActivity.TEMP_UNIT_INTENT_KEY, isFahrenheit);
+        intent.putExtra(SettingsActivity.PUBLISH_INTENT_KEY, publishKey);
+        intent.putExtra(SettingsActivity.SUBSCRIBE_INTENT_KEY, subscribeKey);
+        intent.putExtra(SettingsActivity.CHANNEL_INTENT_KEY, channel);
         startActivityForResult(intent, TEMP_CHANGE_REQUEST);
     }
 
@@ -265,16 +268,18 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         if (requestCode == TEMP_CHANGE_REQUEST){
-            // Making sure requrset was successful
+            // Making sure request was successful
             if (resultCode == RESULT_OK){
                 Bundle receivedData = data.getExtras();
                 String publishKey = receivedData.getString(SettingsActivity.PUBLISH_INTENT_KEY);
-                String subKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
+                String subscribeKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
                 boolean isFahrenheit = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
 
-                PUBLISH_KEY = publishKey;
-                SUBSCRIBE_KEY = subKey;
+                this.publishKey = publishKey;
+                this.subscribeKey = subscribeKey;
                 this.isFahrenheit = isFahrenheit;
+                setTempUnit(isFahrenheit);
+                adapter.updateCurrentFragsAll();
 
 
 
@@ -293,11 +298,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
     public void initPubNub(){
         PNConfiguration pnConfiguration = new PNConfiguration();
-        pnConfiguration.setPublishKey(PUBLISH_KEY);
-        pnConfiguration.setSubscribeKey(SUBSCRIBE_KEY);
+            pnConfiguration.setPublishKey(publishKey);
+        pnConfiguration.setSubscribeKey(subscribeKey);
         pnConfiguration.setUuid("AndroidPiLight");
         mPubNub = new PubNub(pnConfiguration);
-        mPubNub.subscribe().channels(Arrays.asList(CHANNEL)).execute();
+        mPubNub.subscribe().channels(Arrays.asList(channel)).execute();
         Log.d(TAG, "subscribed");
 
         mPubNub.addListener(new SubscribeCallback() {
@@ -448,10 +453,22 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         }
 
 
-        public void updateCurrentFrags(int moistureValue, int lightValue, int tempValue){
+        /**
+         * Updates only optimal stats of current fragments in viewPager. Called when adding new plant.
+         * @param moistureValue
+         * @param lightValue
+         * @param tempValue
+         */
+        public void updateCurrentFragsOptimal(int moistureValue, int lightValue, int tempValue){
             currentMoistureFragment.setOptimalStatText(String.valueOf(moistureValue));
             currentLightFragment.setOptimalStatText(String.valueOf(lightValue));
             currentTempFragment.setOptimalStatText(String.valueOf(tempValue));
+        }
+
+        public void updateCurrentFragsAll(){
+            currentMoistureFragment.refresh();
+            currentLightFragment.refresh();
+            currentTempFragment.refresh();
         }
 
 

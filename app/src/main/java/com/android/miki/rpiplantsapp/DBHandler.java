@@ -31,6 +31,16 @@ public class DBHandler extends SQLiteOpenHelper {
     public static final String COLUMN_LAST_LIGHT = "last_light";
     public static final String COLUMN_LAST_MOISTURE = "last_moisture";
     public static final String COLUMN_LAST_TEMP = "last_temp";
+    public static final String COLUMN_GPIO_MOISTURE = "gpio_moisture";
+    public static final String COLUMN_GPIO_LIGHT = "gpio_light";
+    public static final String COLUMN_GPIO_TEMP = "gpio_temp";
+
+    public static final String TABLE_SETTINGS = "settings";
+    public static final String COLUMN_TEMP_UNIT = "temp_unit";
+    public static final String COLUMN_PUB_KEY = "pub_key";
+    public static final String COLUMN_SUB_KEY = "sub_key";
+    public static final String COLUMN_CHANNEL = "channel";
+
     /**
      * Put this column into a different table. Along with channel, and pub & sub keys.
     public static final String COLUMN_TEMP_UNIT = "temp_unit";
@@ -56,7 +66,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String query = "CREATE TABLE " + TABLE_PLANTS + "(" +
+        String query1 = "CREATE TABLE " + TABLE_PLANTS + "(" +
                 COLUMN_PLANT_NAME  + " TEXT PRIMARY KEY, " +
                 COLUMN_PLANT_SPECIES   + " TEXT, " +
                 COLUMN_CURRENT_LIGHT  + " INTEGER, " +
@@ -64,15 +74,32 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_CURRENT_TEMP  + " INTEGER, "
                 + COLUMN_OPTIMAL_LIGHT  + " INTEGER, " +
                 COLUMN_OPTIMAL_MOISTURE + " INTEGER, " +
-                COLUMN_OPTIMAL_TEMP + " INTEGER " +
+                COLUMN_OPTIMAL_TEMP + " INTEGER, " +
+                COLUMN_GPIO_LIGHT + " INTEGER, " +
+                COLUMN_GPIO_MOISTURE + " INTEGER, " +
+                COLUMN_GPIO_TEMP + " INTEGER " +
                 ");";
-        db.execSQL(query);
+        String query2 = "CREATE TABLE " + TABLE_SETTINGS + "(" +
+                COLUMN_PUB_KEY
+
+        db.execSQL(query1);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS" + TABLE_PLANTS);
         onCreate(db);
+    }
+
+    public void setGPIO(int lightGPIO, int moistureGPIO, int tempGPIO){
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_GPIO_MOISTURE, moistureGPIO);
+        values.put(COLUMN_GPIO_LIGHT, lightGPIO);
+        values.put(COLUMN_GPIO_TEMP, tempGPIO);
+
+        SQLiteDatabase db = getWritableDatabase();
+        db.insert(TABLE_SETTINGS, null, values);
+        db.close();
     }
 
     // Add a new row to the database

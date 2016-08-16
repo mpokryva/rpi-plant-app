@@ -29,5 +29,9 @@
     <string name="ok">Ok</string>
     <string name="channel">Channel</string>
     <string name="refresh_rate">Refresh rate</string>
+    <string name="light_gpio_hint">Light GPIO #</string>
+    <string name="moisture_gpio_hint">Moisture GPIO #</string>
+    <string name="temperature_gpio_hint">Temperature GPIO #</string>
+    <string name="set_gpio_pins">Set GPIO pins</string>
 
 </resources>

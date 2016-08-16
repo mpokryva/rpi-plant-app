@@ -82,9 +82,9 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     private ListView mDrawerList;
     private PubNub mPubNub;
     private String[] mPlantTitles;
-    private static String publishKey = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
-    private static String subscribeKey ="sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
-    private static String channel = "py-light";
+    private String publishKey = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
+    private String subscribeKey ="sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
+    private String channel = "py-light";
     private long lastUpdate = System.currentTimeMillis();
     private TabLayout tabLayout;
     private String TAG = "PlantsStatsActivity";

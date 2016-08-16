@@ -12,17 +12,20 @@ import android.view.ViewGroup;
  **/
 public class Plant {
     public static final String ARG_PLANT_NUMBER = "plant_number";
-    private LightFragment light;// = new LightFragment();
-    private MoistureFragment moisture;// = new MoistureFragment();
-    private TemperatureFragment temperature;// = new TemperatureFragment();
+    private LightFragment light;
+    private MoistureFragment moisture;
+    private TemperatureFragment temperature;
     private String plantName;
     private String plantSpecies;
+    private int lightGPIO;
+    private int moistureGPIO;
+    private int tempGPIO;
 
 
     public Plant (String plantName, String plantSpecies) {
         this.plantName = plantName;
         this.plantSpecies = plantSpecies;
-        if (light ==null) {
+        if (light == null) {
             light = new LightFragment();
             moisture = new MoistureFragment();
             temperature = new TemperatureFragment();
@@ -66,5 +69,29 @@ public class Plant {
 
     public void setPlantSpecies(String plantSpecies) {
         this.plantSpecies = plantSpecies;
+    }
+
+    public int getMoistureGPIO() {
+        return moistureGPIO;
+    }
+
+    public void setMoistureGPIO(int moistureGPIO) {
+        this.moistureGPIO = moistureGPIO;
+    }
+
+    public int getLightGPIO() {
+        return lightGPIO;
+    }
+
+    public void setLightGPIO(int lightGPIO) {
+        this.lightGPIO = lightGPIO;
+    }
+
+    public int getTempGPIO() {
+        return tempGPIO;
+    }
+
+    public void setTempGPIO(int tempGPIO) {
+        this.tempGPIO = tempGPIO;
     }
 }

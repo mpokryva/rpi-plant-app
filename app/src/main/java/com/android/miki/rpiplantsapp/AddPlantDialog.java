@@ -26,7 +26,7 @@ public class AddPlantDialog extends DialogFragment {
     AddPlantDialogListener mListener;
 
     public interface AddPlantDialogListener{
-        public void onDialogPositiveClick(Plant newPlant);
+        void onDialogPositiveClick(Plant newPlant);
         //public void onDialogNegativeClick(); //Not sure if needed
     }
     @Override

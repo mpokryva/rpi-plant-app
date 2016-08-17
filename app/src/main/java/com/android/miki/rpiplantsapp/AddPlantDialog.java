@@ -10,7 +10,9 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 /**
@@ -22,6 +24,9 @@ public class AddPlantDialog extends DialogFragment {
     private EditText optimalTempEdit;
     private EditText optimalMoistureEdit;
     private EditText optimalLightEdit;
+    private EditText lightGPIOEdit;
+    private EditText moistureGPIOEdit;
+    private EditText tempGPIOEdit;
     private DBHandler mDBHandler;
     AddPlantDialogListener mListener;
 
@@ -29,10 +34,12 @@ public class AddPlantDialog extends DialogFragment {
         void onDialogPositiveClick(Plant newPlant);
         //public void onDialogNegativeClick(); //Not sure if needed
     }
+
+
+
     @Override
     @NonNull
     public Dialog onCreateDialog(Bundle savedInstanceState){
-
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.add_plant_dialog, null);
@@ -41,6 +48,10 @@ public class AddPlantDialog extends DialogFragment {
         optimalTempEdit = (EditText) view.findViewById(R.id.optimal_temp_edit);
         optimalMoistureEdit = (EditText) view.findViewById(R.id.optimal_moisture_edit);
         optimalLightEdit = (EditText) view.findViewById(R.id.optimal_light_edit);
+        lightGPIOEdit = (EditText) view.findViewById(R.id.gpio_light_edit);
+        moistureGPIOEdit = (EditText) view.findViewById(R.id.gpio_moisture_edit);
+        tempGPIOEdit = (EditText) view.findViewById(R.id.gpio_temp_edit);
+
         builder.setView(view);
                 builder.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
                     @Override
@@ -50,6 +61,9 @@ public class AddPlantDialog extends DialogFragment {
                         int selectedOptimalTemp = Integer.parseInt(optimalTempEdit.getText().toString());
                         int selectedOptimalMoisture = Integer.parseInt(optimalMoistureEdit.getText().toString());
                         int selectedOptimalLight = Integer.parseInt(optimalLightEdit.getText().toString());
+                        int lightGPIO = Integer.parseInt(lightGPIOEdit.getText().toString());
+                        int moistureGPIO = Integer.parseInt(moistureGPIOEdit.getText().toString());
+                        int tempGPIO = Integer.parseInt(tempGPIOEdit.getText().toString());
 
                         /**
                          * May be buggy.
@@ -58,6 +72,9 @@ public class AddPlantDialog extends DialogFragment {
                         newPlant.getLightFrag().getStat().setOptimalLevel(selectedOptimalLight);
                         newPlant.getMoistureFrag().getStat().setOptimalLevel(selectedOptimalMoisture);
                         newPlant.getTempFrag().getStat().setOptimalLevel(selectedOptimalTemp);
+                        newPlant.setLightGPIO(lightGPIO);
+                        newPlant.setMoistureGPIO(moistureGPIO);
+                        newPlant.setTempGPIO(tempGPIO);
 
                         mDBHandler = new DBHandler(getActivity(), null, null, 1); //getActivity() may be buggy. Other 3 params are irrelevant
                         mDBHandler.addPlant(newPlant);
@@ -75,8 +92,6 @@ public class AddPlantDialog extends DialogFragment {
                     }
                 });
 
-
-        //return createdDialog;
         return builder.create();
     }
 
@@ -92,6 +107,8 @@ public class AddPlantDialog extends DialogFragment {
                     "AddPlantDialogListener interface");
         }
     }
+
+
 
 
 

@@ -20,6 +20,14 @@ public class Plant {
     private int lightGPIO;
     private int moistureGPIO;
     private int tempGPIO;
+    public static final String PLANT_NAME_KEY = "plantName";
+    public static final String PLANT_SPECIES_KEY= "plantSpecies";
+    public static final String OPTIMAL_LIGHT_KEY = "optimalLight";
+    public static final String OPTIMAL_MOISTURE_KEY = "optimalMoisture";
+    public static final String OPTIMAL_TEMP_KEY = "optimalTemp";
+    public static final String GPIO_LIGHT_KEY = "gpio_light_key";
+    public static final String GPIO_MOISTURE_KEY = "gpio_moisture_key";
+    public static final String GPIO_TEMP_KEY = "gpio_temp_key";
 
 
     public Plant (String plantName, String plantSpecies) {

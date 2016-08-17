@@ -66,7 +66,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String query1 = "CREATE TABLE " + TABLE_PLANTS + "(" +
+        String query = "CREATE TABLE " + TABLE_PLANTS + "(" +
                 COLUMN_PLANT_NAME  + " TEXT PRIMARY KEY, " +
                 COLUMN_PLANT_SPECIES   + " TEXT, " +
                 COLUMN_CURRENT_LIGHT  + " INTEGER, " +
@@ -79,10 +79,8 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_GPIO_MOISTURE + " INTEGER, " +
                 COLUMN_GPIO_TEMP + " INTEGER " +
                 ");";
-        String query2 = "CREATE TABLE " + TABLE_SETTINGS + "(" +
-                COLUMN_PUB_KEY
 
-        db.execSQL(query1);
+        db.execSQL(query);
     }
 
     @Override
@@ -110,9 +108,15 @@ public class DBHandler extends SQLiteOpenHelper {
         int optimalLight = plant.getLightFrag().getStat().getOptimalLevel();
         int optimalMoisture = plant.getMoistureFrag().getStat().getOptimalLevel();
         int optimalTemp = plant.getTempFrag().getStat().getOptimalLevel();
+        int lightGPIO = plant.getLightGPIO();
+        int moistureGPIO = plant.getMoistureGPIO();
+        int tempGPIO = plant.getTempGPIO();
         values.put(COLUMN_OPTIMAL_LIGHT, optimalLight);
         values.put(COLUMN_OPTIMAL_MOISTURE, optimalMoisture);
         values.put(COLUMN_OPTIMAL_TEMP, optimalTemp);
+        values.put(COLUMN_GPIO_LIGHT, lightGPIO);
+        values.put(COLUMN_GPIO_MOISTURE, moistureGPIO);
+        values.put(COLUMN_GPIO_TEMP, tempGPIO);
         /**
          * Add code for adding LMT levels.
          */

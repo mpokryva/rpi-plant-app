@@ -274,6 +274,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
         }
     }
 
+    /**
+     * Set the temperature unit, and does conversions, if necessary.
+     * @param isFahrenheit if true, then unit is Fahrenheit.
+
+     */
     private void setTempUnit(boolean isFahrenheit){
        if (isFahrenheit){
            tempUnit = fahrenheit;
@@ -282,6 +287,8 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
            tempUnit = celsius;
        }
     }
+
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
@@ -292,12 +299,21 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 String publishKey = receivedData.getString(SettingsActivity.PUBLISH_INTENT_KEY);
                 String subscribeKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
                 boolean isFahrenheit = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
+                boolean wasFahrenheit = receivedData.getBoolean(SettingsActivity.INIT_TEMP_UNIT_KEY);
+
+                boolean convert;
+                if(wasFahrenheit != isFahrenheit){
+                    convert = true;
+                }
+                else {
+                    convert = false;
+                }
 
                 this.publishKey = publishKey;
                 this.subscribeKey = subscribeKey;
                 this.isFahrenheit = isFahrenheit;
                 setTempUnit(isFahrenheit);
-                adapter.refreshCurrentFrags();
+                adapter.refreshCurrentFrags(convert);
 
 
 
@@ -327,6 +343,26 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 createPlantMenuItem(plant);
             }
         }
+    }
+
+    /**
+     * Converts to Celsius.
+     * @param value Value to convert.
+     * @return The converted value
+     */
+    private int convertToCelsius(int value){
+        int convertedvalue = ((value-32)*5)/9;
+        return convertedvalue;
+    }
+
+    /**
+     * Converts to Fahrenheit.
+     * @param value Value to convert.
+     * @return The converted value.
+     */
+    private int convertToFahrenheit(int value){
+        int convertedvalue = ((9*value)/5)+32;
+        return convertedvalue;
     }
 
 
@@ -507,7 +543,37 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             currentTempFragment.setOptimalStatText(String.valueOf(tempValue));
         }
 
-        public void refreshCurrentFrags(){
+        /**
+         *  Refreshes current fragments, and converts units if necessary.
+         * @param convert
+         */
+        public void refreshCurrentFrags(boolean convert){
+            if (convert){
+                // Convert from C to F
+                if (isFahrenheit) {
+                    PlantStat moistureStat = currentMoistureFragment.getStat();
+                    PlantStat lightStat = currentLightFragment.getStat();
+                    PlantStat tempStat = currentTempFragment.getStat();
+                    moistureStat.setCurrentLevel(convertToFahrenheit(moistureStat.getCurrentLevel()));
+                    moistureStat.setOptimalLevel(convertToFahrenheit(moistureStat.getOptimalLevel()));
+                    currentLightFragment.getStat().setCurrentLevel(convertToFahrenheit(lightStat.getCurrentLevel()));
+                    currentLightFragment.getStat().setOptimalLevel(convertToFahrenheit(lightStat.getOptimalLevel()));
+                    currentTempFragment.getStat().setCurrentLevel(convertToFahrenheit(tempStat.getCurrentLevel()));
+                    currentTempFragment.getStat().setOptimalLevel(convertToFahrenheit(tempStat.getOptimalLevel()));
+                }
+                // Convert from F to C
+                if (!isFahrenheit) {
+                    PlantStat moistureStat = currentMoistureFragment.getStat();
+                    PlantStat lightStat = currentLightFragment.getStat();
+                    PlantStat tempStat = currentTempFragment.getStat();
+                    moistureStat.setCurrentLevel(convertToCelsius(moistureStat.getCurrentLevel()));
+                    moistureStat.setOptimalLevel(convertToCelsius(moistureStat.getOptimalLevel()));
+                    currentLightFragment.getStat().setCurrentLevel(convertToCelsius(lightStat.getCurrentLevel()));
+                    currentLightFragment.getStat().setOptimalLevel(convertToCelsius(lightStat.getOptimalLevel()));
+                    currentTempFragment.getStat().setCurrentLevel(convertToCelsius(tempStat.getCurrentLevel()));
+                    currentTempFragment.getStat().setOptimalLevel(convertToCelsius(tempStat.getOptimalLevel()));
+                }
+            }
             currentMoistureFragment.refresh();
             currentLightFragment.refresh();
             currentTempFragment.refresh();

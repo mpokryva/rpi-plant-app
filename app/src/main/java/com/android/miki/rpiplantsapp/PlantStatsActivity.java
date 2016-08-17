@@ -298,11 +298,10 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 Bundle receivedData = data.getExtras();
                 String publishKey = receivedData.getString(SettingsActivity.PUBLISH_INTENT_KEY);
                 String subscribeKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
-                boolean isFahrenheit = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
-                boolean wasFahrenheit = receivedData.getBoolean(SettingsActivity.INIT_TEMP_UNIT_KEY);
+                boolean isFahrenheitUpdated = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
 
                 boolean convert;
-                if(wasFahrenheit != isFahrenheit){
+                if(isFahrenheit != isFahrenheitUpdated){
                     convert = true;
                 }
                 else {
@@ -311,7 +310,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
                 this.publishKey = publishKey;
                 this.subscribeKey = subscribeKey;
-                this.isFahrenheit = isFahrenheit;
+                this.isFahrenheit = isFahrenheitUpdated;
                 setTempUnit(isFahrenheit);
                 adapter.refreshCurrentFrags(convert);
 

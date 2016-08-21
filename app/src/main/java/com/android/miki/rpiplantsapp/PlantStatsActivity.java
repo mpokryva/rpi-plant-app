@@ -3,6 +3,7 @@ package com.android.miki.rpiplantsapp;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
@@ -28,6 +29,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TextView;
@@ -55,6 +57,7 @@ import com.pubnub.api.PubnubError;
 **/
 
 
+import com.fasterxml.jackson.core.sym.Name;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.pubnub.api.PNConfiguration;
 import com.pubnub.api.PubNub;
@@ -67,6 +70,8 @@ import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
 
 
 import java.lang.reflect.Member;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.logging.Handler;
@@ -76,7 +81,7 @@ import javax.security.auth.callback.Callback;
 import retrofit2.http.DELETE;
 
 
-public class PlantStatsActivity extends FragmentActivity implements AddPlantDialog.AddPlantDialogListener {
+public class PlantStatsActivity extends FragmentActivity implements DialogListener {
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -96,9 +101,9 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
     public static String lightKey = "lightValue";
     public static String moistureKey = "moistureValue";
     public static String tempKey = "tempValue";
-    private int lightMessage;
-    private int moistureMessage;
-    private int tempMessage;
+    private double lightMessage;
+    private double moistureMessage;
+    private double tempMessage;
     private Plant selectedPlant;
     private String celsius = "°C";
     private String fahrenheit = "°F";
@@ -197,34 +202,79 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
     /**
      * Handle the plant that is received.
+     * @param dialogTag Tag of dialog
      * @param newPlant
      */
 
 
     @Override
-    public void onDialogPositiveClick(Plant newPlant) {
-        createPlantMenuItem(newPlant);
+    public void onDialogPositiveClick(String dialogTag, Plant newPlant) {
+        if (dialogTag == NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG){
+            adapter.refreshCurrentFrags(false);
+        }
+        //if (dialogTag == )
+        //createPlantMenuItem(newPlant);
     }
 
     private void createPlantMenuItem(final Plant plant){
         String plantName = plant.getPlantName();
         MenuItem plantMenuItem = plantsMenu.add(plantName);
         View view = new View(this);
-        view.setOnLongClickListener(new View.OnLongClickListener() {
+        plantMenuItem.setActionView(R.drawable.potted_plant);
+        plantMenuItem.getActionView().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                AddPlantDialog addPlantDialog = new AddPlantDialog();
+                // Make dialog with 3 options. (NameSpecies, OptimalStats, GPIO)
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(PlantStatsActivity.this);
+                alertDialog.setTitle("Change plant attributes");
+                final String choices[] = {"Name/species", "Optimal stats", "GPIO pins"};
+                alertDialog.setItems(choices, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface d, int choice){
+                        switch (choice){
+                            // Name/species
+                            case 0:
+                                NameSpeciesDialog nameSpeciesDialog = new NameSpeciesDialog();
+                                nameSpeciesDialog.setPlant(plant);
+                                nameSpeciesDialog.show(getSupportFragmentManager(), NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG);
+                        }
+                    }
+                });
+                alertDialog.show();
                 return false;
             }
         });
+        /*
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                // Make dialog with 3 options. (NameSpecies, OptimalStats, GPIO)
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(PlantStatsActivity.this);
+                alertDialog.setTitle("Change plant attributes");
+                final String choices[] = {"Name/species", "Optimal stats", "GPIO pins"};
+                alertDialog.setItems(choices, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface d, int choice){
+                        switch (choice){
+                            // Name/species
+                            case 0:
+                                NameSpeciesDialog nameSpeciesDialog = new NameSpeciesDialog();
+                                nameSpeciesDialog.setPlant(plant);
+                                nameSpeciesDialog.show(getSupportFragmentManager(), NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG);
+                        }
+                    }
+                });
+                alertDialog.show();
+                return false;
+            }
+        });
+        */
         plantMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 //Loads tabs
                 selectedPlant = plant;
-                int optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
-                int optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
-                int optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
+                double optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
+                double optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
+                double optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
                 adapter.updateCurrentFragsOptimal(optimalMoisture, optimalLight, optimalTemp);
                // selectedPlant = null;
                 return false;
@@ -238,7 +288,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
 
     }
 
-    private void sendValueToFragments(int value){
+    private void sendValueToFragments(double value){
         Intent intent = new Intent(LightFragment.getIntentKeyWord());
         intent.putExtra(lightKey, value);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -324,12 +374,12 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                 Bundle receivedData = data.getExtras();
                 String plantName = receivedData.getString(Plant.PLANT_NAME_KEY);
                 String plantSpecies = receivedData.getString(Plant.PLANT_SPECIES_KEY);
-                int optimalLight = receivedData.getInt(Plant.OPTIMAL_LIGHT_KEY);
-                int optimalMoisture = receivedData.getInt(Plant.OPTIMAL_MOISTURE_KEY);
-                int optimalTemp = receivedData.getInt(Plant.OPTIMAL_TEMP_KEY);
-                int lightGPIO = receivedData.getInt(Plant.GPIO_LIGHT_KEY);
-                int moistureGPIO = receivedData.getInt(Plant.GPIO_MOISTURE_KEY);
-                int tempGPIO = receivedData.getInt(Plant.GPIO_TEMP_KEY);
+                double optimalLight = receivedData.getDouble(Plant.OPTIMAL_LIGHT_KEY);
+                double optimalMoisture = receivedData.getDouble(Plant.OPTIMAL_MOISTURE_KEY);
+                double optimalTemp = receivedData.getDouble(Plant.OPTIMAL_TEMP_KEY);
+                double lightGPIO = receivedData.getDouble(Plant.GPIO_LIGHT_KEY);
+                double moistureGPIO = receivedData.getDouble(Plant.GPIO_MOISTURE_KEY);
+                double tempGPIO = receivedData.getDouble(Plant.GPIO_TEMP_KEY);
 
                 Plant plant = new Plant(plantName, plantSpecies);
                 plant.getLightFrag().getStat().setOptimalLevel(optimalLight);
@@ -349,9 +399,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
      * @param value Value to convert.
      * @return The converted value
      */
-    private int convertToCelsius(int value){
-        int convertedvalue = ((value-32)*5)/9;
-        return convertedvalue;
+    private double convertToCelsius(double value){
+        double convertedValue = ((value-32)*5)/9;
+        double roundedvalue = Math.round(convertedValue*100.0)/100.0;
+
+        return roundedvalue;
     }
 
     /**
@@ -359,9 +411,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
      * @param value Value to convert.
      * @return The converted value.
      */
-    private int convertToFahrenheit(int value){
-        int convertedvalue = ((9*value)/5)+32;
-        return convertedvalue;
+    private double convertToFahrenheit(double value){
+        double convertedValue = ((9*value)/5)+32;
+        double roundedvalue = Math.round(convertedValue*100)/100;
+
+        return roundedvalue;
     }
 
 
@@ -391,11 +445,11 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
             @Override
             public void message(PubNub pubnub, PNMessageResult message) {
                 JsonNode lightNode = message.getMessage().findValue(lightKey); // "lightValue" is JSON key.
-                lightMessage = lightNode.asInt();
-                Log.d(TAG, "Got message as int");
+                lightMessage = lightNode.asDouble();
+                Log.d(TAG, "Got message as double");
                 sendValueToFragments(lightMessage);
                 //Bundle data = new Bundle();
-                //data.putInt(lightKey, lightMessage);
+                //data.putDouble(lightKey, lightMessage);
 
 
             }
@@ -479,26 +533,10 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                         return currentMoistureFragment;
 
                     }
-                    else {
-                       // mFragmentManager.beginTransaction().remove(currentMoistureFragment).commit();
-                        int optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
-                        currentMoistureFragment = (MoistureFragment) MoistureFragment.newInstance(moistureKey, optimalMoisture);
-                            //notifyDataSetChanged();
-
-                        return currentMoistureFragment;
-                    }
                 case 1:
                     if(currentLightFragment == null){
                         LightFragment lightTab = new LightFragment();
                         currentLightFragment = lightTab;
-                        return currentLightFragment;
-                    }
-                    else {
-                        //mFragmentManager.beginTransaction().remove(currentLightFragment).commit();
-                        //currentLightFragment = selectedPlant.getLightFrag();
-                        int optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
-                        currentLightFragment = (LightFragment) LightFragment.newInstance(moistureKey, optimalLight);
-                       // notifyDataSetChanged();
                         return currentLightFragment;
                     }
                 case 2:
@@ -508,15 +546,6 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
                         getItemNeverCalled = false;
                         return currentTempFragment;
                     }
-                    else {
-                        //mFragmentManager.beginTransaction().remove(currentTempFragment).commit();
-                       // currentTempFragment = selectedPlant.getTempFrag();
-                        int optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
-                        currentTempFragment =  (TemperatureFragment) TemperatureFragment.newInstance(moistureKey, optimalTemp);
-                        //notifyDataSetChanged();
-                        return currentTempFragment;
-                    }
-
                 default:
                     return null;
             }
@@ -536,7 +565,7 @@ public class PlantStatsActivity extends FragmentActivity implements AddPlantDial
          * @param lightValue
          * @param tempValue
          */
-        public void updateCurrentFragsOptimal(int moistureValue, int lightValue, int tempValue){
+        public void updateCurrentFragsOptimal(double moistureValue, double lightValue, double tempValue){
             currentMoistureFragment.setOptimalStatText(String.valueOf(moistureValue));
             currentLightFragment.setOptimalStatText(String.valueOf(lightValue));
             currentTempFragment.setOptimalStatText(String.valueOf(tempValue));

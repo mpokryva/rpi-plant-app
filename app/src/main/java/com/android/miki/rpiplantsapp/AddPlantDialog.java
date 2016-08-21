@@ -29,6 +29,7 @@ public class AddPlantDialog extends DialogFragment {
     private EditText tempGPIOEdit;
     private DBHandler mDBHandler;
     AddPlantDialogListener mListener;
+    public static final String ADD_PLANT_DIALOG_TAG = "AddPlantDialog";
 
     public interface AddPlantDialogListener{
         void onDialogPositiveClick(Plant newPlant);
@@ -58,12 +59,12 @@ public class AddPlantDialog extends DialogFragment {
                     public void onClick(DialogInterface dialog, int which) {
                         String selectedPlantName = plantNameEdit.getText().toString();
                         String selectedPlantSpecies = plantSpeciesEdit.getText().toString();
-                        int selectedOptimalTemp = Integer.parseInt(optimalTempEdit.getText().toString());
-                        int selectedOptimalMoisture = Integer.parseInt(optimalMoistureEdit.getText().toString());
-                        int selectedOptimalLight = Integer.parseInt(optimalLightEdit.getText().toString());
-                        int lightGPIO = Integer.parseInt(lightGPIOEdit.getText().toString());
-                        int moistureGPIO = Integer.parseInt(moistureGPIOEdit.getText().toString());
-                        int tempGPIO = Integer.parseInt(tempGPIOEdit.getText().toString());
+                        double selectedOptimalTemp = Double.parseDouble(optimalTempEdit.getText().toString());
+                        double selectedOptimalMoisture = Double.parseDouble(optimalMoistureEdit.getText().toString());
+                        double selectedOptimalLight = Double.parseDouble(optimalLightEdit.getText().toString());
+                        double lightGPIO = Double.parseDouble(lightGPIOEdit.getText().toString());
+                        double moistureGPIO = Double.parseDouble(moistureGPIOEdit.getText().toString());
+                        double tempGPIO = Double.parseDouble(tempGPIOEdit.getText().toString());
 
                         /**
                          * May be buggy.

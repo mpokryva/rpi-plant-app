@@ -23,6 +23,7 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
 
     }
 
@@ -47,7 +48,7 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
             String newCurrentText = newText + " " + activity.getTempUnit();
             currentStatText.setText(newCurrentText);
-            mStat.setCurrentLevel(Integer.parseInt(newText));
+            mStat.setCurrentLevel(Double.parseDouble(newText));
         }
         catch (IllegalArgumentException e){
             Log.d(TAG, "Invalid parameter. Level not changed.");
@@ -60,7 +61,7 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
             String newOptimalText = newText + " " + activity.getTempUnit();
             optimalStatText.setText(newOptimalText);
-            mStat.setOptimalLevel(Integer.parseInt(newText));
+            mStat.setOptimalLevel(Double.parseDouble(newText));
         }
         catch (IllegalArgumentException e){
             Log.d(TAG, "Invalid parameter. Level not changed.");
@@ -83,22 +84,22 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
     @Override
     public void update(String statKey){
         Bundle data = getArguments();
-        int statLevel = data.getInt(statKey);
+        double  statLevel = data.getDouble(statKey);
         getStat().setCurrentLevel(statLevel);
         //setCurrentStatText(String.valueOf(statLevel));
     }
 
-    protected void initializeTexts(View v, int currentResId, int optimalResId, int currentStat, int optimalStat){
+    protected void initializeTexts(View v, int currentResId, int optimalResId, double currentStat, double optimalStat){
         setCurrentTextView((TextView)v.findViewById(currentResId));
         setOptimalTextView((TextView)v.findViewById(optimalResId));
         setCurrentStatText(String.valueOf(currentStat));
         setOptimalStatText(String.valueOf(optimalStat));
     }
 
-    protected static StatFragment newInstance(String statKey, int stat){
+    protected static StatFragment newInstance(String statKey, double  stat){
         StatFragment statFragment = new StatFragment();
         Bundle args = new Bundle();
-        args.putInt(statKey, stat);
+        args.putDouble(statKey, stat);
         statFragment.setArguments(args);
 
         return statFragment;

@@ -69,15 +69,15 @@ public class DBHandler extends SQLiteOpenHelper {
         String query = "CREATE TABLE " + TABLE_PLANTS + "(" +
                 COLUMN_PLANT_NAME  + " TEXT PRIMARY KEY, " +
                 COLUMN_PLANT_SPECIES   + " TEXT, " +
-                COLUMN_CURRENT_LIGHT  + " INTEGER, " +
-                COLUMN_CURRENT_MOISTURE  + " INTEGER, " +
-                COLUMN_CURRENT_TEMP  + " INTEGER, "
-                + COLUMN_OPTIMAL_LIGHT  + " INTEGER, " +
-                COLUMN_OPTIMAL_MOISTURE + " INTEGER, " +
-                COLUMN_OPTIMAL_TEMP + " INTEGER, " +
-                COLUMN_GPIO_LIGHT + " INTEGER, " +
-                COLUMN_GPIO_MOISTURE + " INTEGER, " +
-                COLUMN_GPIO_TEMP + " INTEGER " +
+                COLUMN_CURRENT_LIGHT  + " REAL, " +
+                COLUMN_CURRENT_MOISTURE  + " REAL, " +
+                COLUMN_CURRENT_TEMP  + " REAL, "
+                + COLUMN_OPTIMAL_LIGHT  + " REAL, " +
+                COLUMN_OPTIMAL_MOISTURE + " REAL, " +
+                COLUMN_OPTIMAL_TEMP + " REAL, " +
+                COLUMN_GPIO_LIGHT + " REAL, " +
+                COLUMN_GPIO_MOISTURE + " REAL, " +
+                COLUMN_GPIO_TEMP + " REAL " +
                 ");";
 
         db.execSQL(query);
@@ -89,7 +89,7 @@ public class DBHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void setGPIO(int lightGPIO, int moistureGPIO, int tempGPIO){
+    public void setGPIO(double lightGPIO, double moistureGPIO, double tempGPIO){
         ContentValues values = new ContentValues();
         values.put(COLUMN_GPIO_MOISTURE, moistureGPIO);
         values.put(COLUMN_GPIO_LIGHT, lightGPIO);
@@ -105,21 +105,18 @@ public class DBHandler extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_PLANT_NAME, plant.getPlantName());
         values.put(COLUMN_PLANT_SPECIES, plant.getPlantSpecies());
-        int optimalLight = plant.getLightFrag().getStat().getOptimalLevel();
-        int optimalMoisture = plant.getMoistureFrag().getStat().getOptimalLevel();
-        int optimalTemp = plant.getTempFrag().getStat().getOptimalLevel();
-        int lightGPIO = plant.getLightGPIO();
-        int moistureGPIO = plant.getMoistureGPIO();
-        int tempGPIO = plant.getTempGPIO();
+        double optimalLight = plant.getLightFrag().getStat().getOptimalLevel();
+        double optimalMoisture = plant.getMoistureFrag().getStat().getOptimalLevel();
+        double optimalTemp = plant.getTempFrag().getStat().getOptimalLevel();
+        double lightGPIO = plant.getLightGPIO();
+        double moistureGPIO = plant.getMoistureGPIO();
+        double tempGPIO = plant.getTempGPIO();
         values.put(COLUMN_OPTIMAL_LIGHT, optimalLight);
         values.put(COLUMN_OPTIMAL_MOISTURE, optimalMoisture);
         values.put(COLUMN_OPTIMAL_TEMP, optimalTemp);
         values.put(COLUMN_GPIO_LIGHT, lightGPIO);
         values.put(COLUMN_GPIO_MOISTURE, moistureGPIO);
         values.put(COLUMN_GPIO_TEMP, tempGPIO);
-        /**
-         * Add code for adding LMT levels.
-         */
         SQLiteDatabase db = getWritableDatabase();
         db.insert(TABLE_PLANTS, null, values);
         db.close();
@@ -203,20 +200,20 @@ public class DBHandler extends SQLiteOpenHelper {
                 Plant plant = new Plant(plantName, plantSpecies);
 
                 PlantStat lightStat = plant.getLightFrag().getStat();
-                //int currentLight = c.getInt(c.getColumnIndex(COLUMN_CURRENT_LIGHT));
-                int optimalLight = c.getInt(c.getColumnIndex(COLUMN_OPTIMAL_LIGHT));
+                //double currentLight = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_LIGHT));
+                double optimalLight = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_LIGHT));
                 //lightStat.setCurrentLevel(currentLight);
                 lightStat.setOptimalLevel(optimalLight);
 
                 PlantStat moistureStat = plant.getMoistureFrag().getStat();
-               // int currentMoisture = c.getInt(c.getColumnIndex(COLUMN_CURRENT_MOISTURE));
-                int optimalMoisture = c.getInt(c.getColumnIndex(COLUMN_OPTIMAL_MOISTURE));
+               // double currentMoisture = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_MOISTURE));
+                double optimalMoisture = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_MOISTURE));
                 //moistureStat.setCurrentLevel(currentMoisture);
                 moistureStat.setOptimalLevel(optimalMoisture);
 
                 PlantStat tempStat = plant.getTempFrag().getStat();
-               // int currentTemp = c.getInt(c.getColumnIndex(COLUMN_CURRENT_TEMP));
-                int optimalTemp = c.getInt(c.getColumnIndex(COLUMN_OPTIMAL_TEMP));
+               // double currentTemp = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_TEMP));
+                double optimalTemp = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_TEMP));
                 // tempStat.setCurrentLevel(currentTemp);
                 moistureStat.setOptimalLevel(optimalTemp);
 
@@ -233,7 +230,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
 
     /**
-    public PlantStat makePlantStat(int currentLevel, int optimalLevel){
+    public PlantStat makePlantStat(double currentLevel, double optimalLevel){
         PlantStat stat = new PlantStat(currentLevel, optimalLevel, ""); // Last parameter should not really be ""
     }
      **/

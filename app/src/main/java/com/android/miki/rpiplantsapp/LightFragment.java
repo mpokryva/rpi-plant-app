@@ -31,7 +31,7 @@ public class LightFragment extends StatFragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(LIGHT_INTENT.equals(intent.getAction())){
-                int value = intent.getIntExtra(PlantStatsActivity.lightKey, 12);
+                double value = intent.getIntExtra(PlantStatsActivity.lightKey, 12);
                 setCurrentStatText(String.valueOf(value));
             }
         }
@@ -61,8 +61,8 @@ public class LightFragment extends StatFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_light, container, false);
-        int currentStat = getStat().getCurrentLevel();
-        int optimalStat = getStat().getOptimalLevel();
+        double currentStat = getStat().getCurrentLevel();
+        double optimalStat = getStat().getOptimalLevel();
         initializeTexts(v,R.id.current_level_light, R.id.optimal_level_light, currentStat, optimalStat);
         //setCurrentTextView((TextView)v.findViewById(R.id.current_level_light));
         //setOptimalTextView((TextView)v.findViewById(R.id.current_level_light));
@@ -78,10 +78,10 @@ public class LightFragment extends StatFragment {
         super.onDestroy();
     }
 
-    protected static LightFragment newInstance(String statKey, int stat){
+    protected static LightFragment newInstance(String statKey, double stat){
         LightFragment statFragment = new LightFragment();
         Bundle args = new Bundle();
-        args.putInt(statKey, stat);
+        args.putDouble(statKey, stat);
         statFragment.setArguments(args);
 
         return statFragment;

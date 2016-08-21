@@ -17,9 +17,9 @@ public class Plant {
     private TemperatureFragment temperature;
     private String plantName;
     private String plantSpecies;
-    private int lightGPIO;
-    private int moistureGPIO;
-    private int tempGPIO;
+    private double lightGPIO;
+    private double moistureGPIO;
+    private double tempGPIO;
     public static final String PLANT_NAME_KEY = "plantName";
     public static final String PLANT_SPECIES_KEY= "plantSpecies";
     public static final String OPTIMAL_LIGHT_KEY = "optimalLight";
@@ -79,27 +79,27 @@ public class Plant {
         this.plantSpecies = plantSpecies;
     }
 
-    public int getMoistureGPIO() {
+    public double getMoistureGPIO() {
         return moistureGPIO;
     }
 
-    public void setMoistureGPIO(int moistureGPIO) {
+    public void setMoistureGPIO(double moistureGPIO) {
         this.moistureGPIO = moistureGPIO;
     }
 
-    public int getLightGPIO() {
+    public double getLightGPIO() {
         return lightGPIO;
     }
 
-    public void setLightGPIO(int lightGPIO) {
+    public void setLightGPIO(double lightGPIO) {
         this.lightGPIO = lightGPIO;
     }
 
-    public int getTempGPIO() {
+    public double getTempGPIO() {
         return tempGPIO;
     }
 
-    public void setTempGPIO(int tempGPIO) {
+    public void setTempGPIO(double tempGPIO) {
         this.tempGPIO = tempGPIO;
     }
 }

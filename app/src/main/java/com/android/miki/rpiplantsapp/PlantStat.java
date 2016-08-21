@@ -4,8 +4,8 @@ package com.android.miki.rpiplantsapp;
  * Created by Miki on 7/28/2016.
  */
 public class PlantStat {
-    private int currentLevel;
-    private int optimalLevel;
+    private double currentLevel;
+    private double optimalLevel;
     private String actionRequired;
 
     public PlantStat(int currentLevel, int optimalLevel, String actionRequired) {
@@ -20,11 +20,11 @@ public class PlantStat {
         actionRequired = "";
     }
 
-    public int getOptimalLevel() {
+    public double getOptimalLevel() {
         return optimalLevel;
     }
 
-    public void setOptimalLevel(int optimalLevel) {
+    public void setOptimalLevel(double optimalLevel) {
         this.optimalLevel = optimalLevel;
     }
 
@@ -36,11 +36,11 @@ public class PlantStat {
         this.actionRequired = actionRequired;
     }
 
-    public int getCurrentLevel() {
+    public double getCurrentLevel() {
         return currentLevel;
     }
 
-    public void setCurrentLevel(int currentLevel) {
+    public void setCurrentLevel(double currentLevel) {
         this.currentLevel = currentLevel;
     }
 }

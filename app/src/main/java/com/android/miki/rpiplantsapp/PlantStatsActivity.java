@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -74,6 +76,8 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.logging.Handler;
 
 import javax.security.auth.callback.Callback;
@@ -98,6 +102,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
     public Menu plantsMenu;
     private DBHandler mDBHandler;
     private ArrayList<Plant> mPlants;
+    private HashMap<String, Plant> mPlantMap;
     public static String lightKey = "lightValue";
     public static String moistureKey = "moistureValue";
     public static String tempKey = "tempValue";
@@ -110,8 +115,10 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
     private String tempUnit;
     private boolean isFahrenheit;
     private final int TEMP_CHANGE_REQUEST = 1;
+    private ArrayList<Plant> mPlantsMenuOrder;
     public static final int ADD_PLANT_REQUEST = 2;
     static String SETTINGS_INTENT_KEY = "settingIntentKey";
+    public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +128,9 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
         Log.d(TAG, "testLog");
         initPubNub();
         Log.d(TAG, "initiated PubNub");
+
+        mPlantMap = new HashMap<>();
+        mPlantsMenuOrder = new ArrayList<>();
 
         setTempUnit(fahrenheit);
 
@@ -163,7 +173,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
 
         NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
 
-            Menu navMenu = mDrawerList.getMenu();
+        Menu navMenu = mDrawerList.getMenu();
         plantsMenu = navMenu.addSubMenu("Plants");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
         SQLiteDatabase db = mDBHandler.getWritableDatabase(); ///////////*************delete
@@ -171,7 +181,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
         mPlants = mDBHandler.makePlants();
 
         for(int i=0; i<mPlants.size(); i++){
-            createPlantMenuItem(mPlants.get(i));
+            createPlantMenuItem(mPlants.get(i), false, 0);
         }
 
 
@@ -208,19 +218,41 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
 
 
     @Override
-    public void onDialogPositiveClick(String dialogTag, Plant newPlant) {
+    public void onDialogPositiveClick(String dialogTag, int menuItemIndex, Plant newPlant) {
         if (dialogTag == NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG){
+            plantsMenu.removeItem(menuItemIndex);
+            mPlantsMenuOrder.remove(menuItemIndex);
+            createPlantMenuItem(newPlant, true, menuItemIndex);
             adapter.refreshCurrentFrags(false);
         }
-        //if (dialogTag == )
-        //createPlantMenuItem(newPlant);
+        if (dialogTag == OptimalStatsDialog.OPTIMAL_STATS_DIALOG_TAG){
+            plantsMenu.removeItem(menuItemIndex);
+            mPlantsMenuOrder.remove(menuItemIndex);
+            createPlantMenuItem(newPlant, true, menuItemIndex);
+            adapter.refreshCurrentFrags(false);
+        }
+        if (dialogTag == SetGPIODialog.SET_GPIO_DIALOG_TAG){
+            plantsMenu.removeItem(menuItemIndex);
+            mPlantsMenuOrder.remove(menuItemIndex);
+            createPlantMenuItem(newPlant, true, menuItemIndex);
+            adapter.refreshCurrentFrags(false);
+        }
     }
 
-    private void createPlantMenuItem(final Plant plant){
+    private void createPlantMenuItem(final Plant plant, boolean specifyPosition, int position){
         String plantName = plant.getPlantName();
-        MenuItem plantMenuItem = plantsMenu.add(plantName);
-        View view = new View(this);
-        plantMenuItem.setActionView(R.drawable.potted_plant);
+        final MenuItem plantMenuItem;
+        if (specifyPosition) {
+            plantMenuItem = plantsMenu.add(Menu.NONE, position, position, plantName);
+        }
+        else {
+                plantMenuItem = plantsMenu.add(Menu.NONE, mPlantsMenuOrder.size(), mPlantsMenuOrder.size(), plantName);
+        }
+        ImageButton pottedPlantIcon = new ImageButton(this);
+        pottedPlantIcon.setImageResource(R.drawable.potted_plant);
+        pottedPlantIcon.setBackgroundColor(Color.TRANSPARENT);
+        plantMenuItem.setActionView(pottedPlantIcon);
+        plantMenuItem.getOrder();
         plantMenuItem.getActionView().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -233,9 +265,18 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                         switch (choice){
                             // Name/species
                             case 0:
-                                NameSpeciesDialog nameSpeciesDialog = new NameSpeciesDialog();
+                                NameSpeciesDialog nameSpeciesDialog = NameSpeciesDialog.newInstance(plantMenuItem.getOrder());
                                 nameSpeciesDialog.setPlant(plant);
                                 nameSpeciesDialog.show(getSupportFragmentManager(), NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG);
+                            case 1:
+                                OptimalStatsDialog optimalStatsDialog = OptimalStatsDialog.newInstance(plantMenuItem.getOrder());
+                                optimalStatsDialog.setPlant(plant);
+                                optimalStatsDialog.show(getSupportFragmentManager(), OptimalStatsDialog.OPTIMAL_STATS_DIALOG_TAG);
+                            case 2:
+                                SetGPIODialog setGPIODialog = SetGPIODialog.newInstance(plantMenuItem.getOrder());
+                                setGPIODialog.setPlant(plant);
+                                setGPIODialog.show(getSupportFragmentManager(), SetGPIODialog.SET_GPIO_DIALOG_TAG);
+
                         }
                     }
                 });
@@ -243,34 +284,12 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                 return false;
             }
         });
-        /*
-        view.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                // Make dialog with 3 options. (NameSpecies, OptimalStats, GPIO)
-                AlertDialog.Builder alertDialog = new AlertDialog.Builder(PlantStatsActivity.this);
-                alertDialog.setTitle("Change plant attributes");
-                final String choices[] = {"Name/species", "Optimal stats", "GPIO pins"};
-                alertDialog.setItems(choices, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d, int choice){
-                        switch (choice){
-                            // Name/species
-                            case 0:
-                                NameSpeciesDialog nameSpeciesDialog = new NameSpeciesDialog();
-                                nameSpeciesDialog.setPlant(plant);
-                                nameSpeciesDialog.show(getSupportFragmentManager(), NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG);
-                        }
-                    }
-                });
-                alertDialog.show();
-                return false;
-            }
-        });
-        */
         plantMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 //Loads tabs
+                //item.getItemId();
+                Toast.makeText(PlantStatsActivity.this, String.valueOf(item.getOrder()), Toast.LENGTH_SHORT).show();
                 selectedPlant = plant;
                 double optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
                 double optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
@@ -282,10 +301,8 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
         });
 
             mDBHandler.addPlant(plant);
-
-
-
-
+            mPlantMap.put(plantName, plant);
+            mPlantsMenuOrder.add(position, plant);
     }
 
     private void sendValueToFragments(double value){
@@ -389,7 +406,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                 plant.setMoistureGPIO(moistureGPIO);
                 plant.setTempGPIO(tempGPIO);
 
-                createPlantMenuItem(plant);
+                createPlantMenuItem(plant, false, 0);
             }
         }
     }

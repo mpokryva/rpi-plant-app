@@ -33,7 +33,6 @@ public class AddPlantDialog extends DialogFragment {
 
     public interface AddPlantDialogListener{
         void onDialogPositiveClick(Plant newPlant);
-        //public void onDialogNegativeClick(); //Not sure if needed
     }
 
 

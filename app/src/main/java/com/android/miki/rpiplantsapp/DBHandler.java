@@ -55,9 +55,9 @@ public class DBHandler extends SQLiteOpenHelper {
     public static final String[] COLUMNS_MOISTURE = {COLUMN_CURRENT_MOISTURE, COLUMN_OPTIMAL_MOISTURE};
     public static final String[] COLUMNS_TEMP = {COLUMN_CURRENT_TEMP, COLUMN_OPTIMAL_TEMP};
     public static final String[] COLUMNS_ALL_BUT_CURRENT = {COLUMN_PLANT_NAME, COLUMN_PLANT_SPECIES,
-            COLUMN_OPTIMAL_LIGHT, COLUMN_OPTIMAL_MOISTURE, COLUMN_OPTIMAL_TEMP};
-
-
+            COLUMN_OPTIMAL_LIGHT, COLUMN_OPTIMAL_MOISTURE, COLUMN_OPTIMAL_TEMP, COLUMN_GPIO_LIGHT, COLUMN_GPIO_MOISTURE, COLUMN_GPIO_TEMP
+    };
+//
 
 
     public DBHandler(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
@@ -71,8 +71,8 @@ public class DBHandler extends SQLiteOpenHelper {
                 COLUMN_PLANT_SPECIES   + " TEXT, " +
                 COLUMN_CURRENT_LIGHT  + " REAL, " +
                 COLUMN_CURRENT_MOISTURE  + " REAL, " +
-                COLUMN_CURRENT_TEMP  + " REAL, "
-                + COLUMN_OPTIMAL_LIGHT  + " REAL, " +
+                COLUMN_CURRENT_TEMP  + " REAL, " +
+                COLUMN_OPTIMAL_LIGHT  + " REAL, " +
                 COLUMN_OPTIMAL_MOISTURE + " REAL, " +
                 COLUMN_OPTIMAL_TEMP + " REAL, " +
                 COLUMN_GPIO_LIGHT + " REAL, " +
@@ -125,8 +125,11 @@ public class DBHandler extends SQLiteOpenHelper {
     // Delete a plant from the database
     public void deletePlant(String plantName){
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("DELETE FROM " + TABLE_PLANTS +" WHERE " + COLUMN_PLANT_NAME + "=\""
-        + plantName + "\";");
+        //db.execSQL("DELETE FROM " + TABLE_PLANTS +" WHERE " + COLUMN_PLANT_NAME + "=\""
+        //+ plantName + "\";");
+        String whereClause = COLUMN_PLANT_NAME + "=?";
+        String[] whereArgs = {plantName};
+        db.delete(TABLE_PLANTS, whereClause, whereArgs);
         db.close();
     }
 
@@ -188,7 +191,7 @@ public class DBHandler extends SQLiteOpenHelper {
      */
     public ArrayList<Plant> makePlants(){
         SQLiteDatabase db = getReadableDatabase();
-        Cursor c = db.query(TABLE_PLANTS,COLUMNS_ALL_BUT_CURRENT,null, null, null, null, null, null);
+        Cursor c = db.query(TABLE_PLANTS, COLUMNS_ALL_BUT_CURRENT, null, null, null, null, null, null);
         c.moveToFirst();
         ArrayList<Plant> plantsList = new ArrayList<>();
 
@@ -198,6 +201,9 @@ public class DBHandler extends SQLiteOpenHelper {
                 String plantName = c.getString(c.getColumnIndex(COLUMN_PLANT_NAME));
                 String plantSpecies = c.getString(c.getColumnIndex(COLUMN_PLANT_SPECIES));
                 Plant plant = new Plant(plantName, plantSpecies);
+                double lightGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_LIGHT));
+                double moistureGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_MOISTURE));
+                double tempGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_TEMP));
 
                 PlantStat lightStat = plant.getLightFrag().getStat();
                 //double currentLight = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_LIGHT));

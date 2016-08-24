@@ -111,4 +111,8 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
         setCurrentStatText(currentStat);
         setOptimalStatText(optimalStat);
     }
+
+    public void onDestroy(){
+        super.onDestroy();
+    }
 }

@@ -29,6 +29,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -114,6 +115,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
     private String fahrenheit = "°F";
     private String tempUnit;
     private boolean isFahrenheit;
+    private MenuItem selectedPlantItem;
     private final int TEMP_CHANGE_REQUEST = 1;
     private ArrayList<Plant> mPlantsMenuOrder;
     public static final int ADD_PLANT_REQUEST = 2;
@@ -175,10 +177,24 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
 
         Menu navMenu = mDrawerList.getMenu();
         plantsMenu = navMenu.addSubMenu("Plants");
+        this.deleteDatabase("userplants.db");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
         SQLiteDatabase db = mDBHandler.getWritableDatabase(); ///////////*************delete
-        db.delete("plants", null, null); //////////////*******delete
+        //db.delete("plants", null, null); //////////////*******delete
         mPlants = mDBHandler.makePlants();
+
+        // Delete the stuff below
+        /**
+        Plant newPlant = new Plant("TestName", "TestSpecies");
+        newPlant.getLightFrag().getStat().setOptimalLevel(1);
+        newPlant.getMoistureFrag().getStat().setOptimalLevel(2);
+        newPlant.getTempFrag().getStat().setOptimalLevel(3);
+        newPlant.setLightGPIO(4);
+        newPlant.setMoistureGPIO(5);
+        newPlant.setTempGPIO(6);
+         **/
+
+        //createPlantMenuItem(newPlant, false, 0);
 
         for(int i=0; i<mPlants.size(); i++){
             createPlantMenuItem(mPlants.get(i), false, 0);
@@ -240,7 +256,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
     }
 
     private void createPlantMenuItem(final Plant plant, boolean specifyPosition, int position){
-        String plantName = plant.getPlantName();
+        final String plantName = plant.getPlantName();
         final MenuItem plantMenuItem;
         if (specifyPosition) {
             plantMenuItem = plantsMenu.add(Menu.NONE, position, position, plantName);
@@ -252,14 +268,14 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
         pottedPlantIcon.setImageResource(R.drawable.potted_plant);
         pottedPlantIcon.setBackgroundColor(Color.TRANSPARENT);
         plantMenuItem.setActionView(pottedPlantIcon);
-        plantMenuItem.getOrder();
+        plantMenuItem.setCheckable(true);
         plantMenuItem.getActionView().setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 // Make dialog with 3 options. (NameSpecies, OptimalStats, GPIO)
                 AlertDialog.Builder alertDialog = new AlertDialog.Builder(PlantStatsActivity.this);
                 alertDialog.setTitle("Change plant attributes");
-                final String choices[] = {"Name/species", "Optimal stats", "GPIO pins"};
+                final String choices[] = {"Name/species", "Optimal stats", "GPIO pins", "Delete plant"};
                 alertDialog.setItems(choices, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface d, int choice){
                         switch (choice){
@@ -268,14 +284,45 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                                 NameSpeciesDialog nameSpeciesDialog = NameSpeciesDialog.newInstance(plantMenuItem.getOrder());
                                 nameSpeciesDialog.setPlant(plant);
                                 nameSpeciesDialog.show(getSupportFragmentManager(), NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG);
+                                break;
                             case 1:
                                 OptimalStatsDialog optimalStatsDialog = OptimalStatsDialog.newInstance(plantMenuItem.getOrder());
                                 optimalStatsDialog.setPlant(plant);
                                 optimalStatsDialog.show(getSupportFragmentManager(), OptimalStatsDialog.OPTIMAL_STATS_DIALOG_TAG);
+                                break;
                             case 2:
                                 SetGPIODialog setGPIODialog = SetGPIODialog.newInstance(plantMenuItem.getOrder());
                                 setGPIODialog.setPlant(plant);
                                 setGPIODialog.show(getSupportFragmentManager(), SetGPIODialog.SET_GPIO_DIALOG_TAG);
+                                break;
+                            case 3:
+                                /**
+                                 *  mDBHandler.deletePlant(plantName);
+                                 int currentItemId = plantMenuItem.getItemId();
+                                 plantsMenu.removeItem(currentItemId);
+                                 mPlantsMenuOrder.remove(currentItemId);
+                                 MenuItem itemToSwitchTo;
+                                 // First item was removed
+                                 if (currentItemId == 0){
+                                 //itemToSwitchTo = plantsMenu.findItem(1);
+                                 loadPlantItemTabs(mPlantsMenuOrder.get(0));
+                                 }
+                                 // Item that was not first was removed
+                                 else {
+                                 //itemToSwitchTo = plantsMenu.findItem(currentItemId-1);
+                                 loadPlantItemTabs(mPlantsMenuOrder.get(currentItemId-1));
+                                 }
+                                 break;
+                                 */
+
+                                int currentItemId = plantMenuItem.getItemId();
+                                plantMenuItem.setVisible(false);
+                                mPlantsMenuOrder.remove(currentItemId);
+                                mDBHandler.deletePlant(plantName);
+                                break;
+
+                            default:
+                                break;
 
                         }
                     }
@@ -285,25 +332,36 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
             }
         });
         plantMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            //Menu item is clicked. Highlights it, un-highlights other item. Loads tabs.
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 //Loads tabs
-                //item.getItemId();
+                // Should delete this toast
                 Toast.makeText(PlantStatsActivity.this, String.valueOf(item.getOrder()), Toast.LENGTH_SHORT).show();
-                selectedPlant = plant;
-                double optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
-                double optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
-                double optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
-                adapter.updateCurrentFragsOptimal(optimalMoisture, optimalLight, optimalTemp);
-               // selectedPlant = null;
+                if (selectedPlantItem != null) {
+                    selectedPlantItem.setChecked(false);
+                }
+                selectedPlantItem = item;
+                selectedPlantItem.setChecked(true);
+                loadPlantItemTabs(plant);
                 return false;
             }
         });
 
             mDBHandler.addPlant(plant);
-            mPlantMap.put(plantName, plant);
-            mPlantsMenuOrder.add(position, plant);
+            mPlantsMenuOrder.add(mPlantsMenuOrder.size(), plant);
     }
+
+    private void loadPlantItemTabs(Plant plant){
+        selectedPlant = plant;
+        double optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
+        double optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
+        double optimalTemp = selectedPlant.getTempFrag().getStat().getOptimalLevel();
+        adapter.updateCurrentFragsOptimal(optimalMoisture, optimalLight, optimalTemp);
+        // selectedPlant = null;
+    }
+
+
 
     private void sendValueToFragments(double value){
         Intent intent = new Intent(LightFragment.getIntentKeyWord());
@@ -559,10 +617,31 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                 case 2:
                     if(currentTempFragment == null){
                         TemperatureFragment tempTab = new TemperatureFragment();
-                        currentTempFragment = tempTab;;
+                        currentTempFragment = tempTab;
                         getItemNeverCalled = false;
                         return currentTempFragment;
                     }
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position){
+            switch (position){
+                case 0:
+                    MoistureFragment moistureTab = (MoistureFragment) super.instantiateItem(container, position);
+                    currentMoistureFragment = moistureTab;
+                    return currentMoistureFragment;
+
+                case 1:
+                    LightFragment lightTab = (LightFragment) super.instantiateItem(container, position);
+                    currentLightFragment = lightTab;
+                    return currentLightFragment;
+                case 2:
+                    TemperatureFragment tempTab = (TemperatureFragment) super.instantiateItem(container, position);
+                    currentTempFragment = tempTab;
+                    return currentTempFragment;
                 default:
                     return null;
             }

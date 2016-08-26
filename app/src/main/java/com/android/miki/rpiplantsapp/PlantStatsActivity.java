@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -21,6 +22,7 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.app.AppCompatActivity;
@@ -86,7 +88,7 @@ import javax.security.auth.callback.Callback;
 import retrofit2.http.DELETE;
 
 
-public class PlantStatsActivity extends FragmentActivity implements DialogListener {
+public class PlantStatsActivity extends AppCompatActivity implements DialogListener {
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -103,7 +105,6 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
     public Menu plantsMenu;
     private DBHandler mDBHandler;
     private ArrayList<Plant> mPlants;
-    private HashMap<String, Plant> mPlantMap;
     public static String lightKey = "lightValue";
     public static String moistureKey = "moistureValue";
     public static String tempKey = "tempValue";
@@ -111,28 +112,36 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
     private double moistureMessage;
     private double tempMessage;
     private Plant selectedPlant;
+    private HashMap<String, MenuItem> mPlantNameToItemMap;
+    private HashMap<String, Plant> mPlantNameToPlantMap;
     private String celsius = "°C";
     private String fahrenheit = "°F";
     private String tempUnit;
     private boolean isFahrenheit;
     private MenuItem selectedPlantItem;
+    private ActionBarDrawerToggle mDrawerToggle;
     private final int TEMP_CHANGE_REQUEST = 1;
     private ArrayList<Plant> mPlantsMenuOrder;
     public static final int ADD_PLANT_REQUEST = 2;
     static String SETTINGS_INTENT_KEY = "settingIntentKey";
     public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
+    private static final String PLANT_NAME_KEY = "plantNameKey";
+    private boolean areFragmentsRestored;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_plant_stats);
+        Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
+        setSupportActionBar(actionBar);
         Log.d(TAG, "inflated layout");
         Log.d(TAG, "testLog");
         initPubNub();
         Log.d(TAG, "initiated PubNub");
-
-        mPlantMap = new HashMap<>();
+        areFragmentsRestored = false;
+        mPlantNameToItemMap = new HashMap<>();
         mPlantsMenuOrder = new ArrayList<>();
+        mPlantNameToPlantMap= new HashMap<>();
 
         setTempUnit(fahrenheit);
 
@@ -174,10 +183,17 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
         });
 
         NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, actionBar, R.string.drawer_open, R.string.drawer_close);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+
 
         Menu navMenu = mDrawerList.getMenu();
         plantsMenu = navMenu.addSubMenu("Plants");
-        this.deleteDatabase("userplants.db");
+        //this.deleteDatabase("userplants.db");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
         SQLiteDatabase db = mDBHandler.getWritableDatabase(); ///////////*************delete
         //db.delete("plants", null, null); //////////////*******delete
@@ -199,6 +215,19 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
         for(int i=0; i<mPlants.size(); i++){
             createPlantMenuItem(mPlants.get(i), false, 0);
         }
+
+        if (savedInstanceState != null){
+            if (savedInstanceState.getString(PLANT_NAME_KEY) != null){
+                String currentItemPlantName = savedInstanceState.getString(PLANT_NAME_KEY);
+                MenuItem lastSelectedItem = mPlantNameToItemMap.get(currentItemPlantName);
+                setSelectedPlantItem(lastSelectedItem);
+                android.support.v7.app.ActionBar actionbar = getSupportActionBar();
+                actionbar.setTitle(currentItemPlantName);
+                selectedPlant = mPlantNameToPlantMap.get(currentItemPlantName);
+                //loadPlantItemTabs(mPlantNameToPlantMap.get(currentItemPlantName));
+            }
+        }
+
 
 
 
@@ -224,7 +253,31 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
 
 
 
+
+
     }
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState){
+        super.onPostCreate(savedInstanceState);
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig){
+        super.onConfigurationChanged(newConfig);
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState){
+        if (selectedPlant != null) {
+            outState.putString(PLANT_NAME_KEY, selectedPlant.getPlantName());
+        }
+        super.onSaveInstanceState(outState);
+    }
+
 
     /**
      * Handle the plant that is received.
@@ -318,6 +371,8 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                                 int currentItemId = plantMenuItem.getItemId();
                                 plantMenuItem.setVisible(false);
                                 mPlantsMenuOrder.remove(currentItemId);
+                                mPlantNameToItemMap.remove(plantName);
+                                mPlantNameToPlantMap.remove(plantName);
                                 mDBHandler.deletePlant(plantName);
                                 break;
 
@@ -332,24 +387,37 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
             }
         });
         plantMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            //Menu item is clicked. Highlights it, un-highlights other item. Loads tabs.
+            //Menu item is clicked. Highlights it, un-highlights other item. Loads tabs. Updates actionbar text.
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 //Loads tabs
                 // Should delete this toast
                 Toast.makeText(PlantStatsActivity.this, String.valueOf(item.getOrder()), Toast.LENGTH_SHORT).show();
-                if (selectedPlantItem != null) {
-                    selectedPlantItem.setChecked(false);
-                }
-                selectedPlantItem = item;
-                selectedPlantItem.setChecked(true);
+                setSelectedPlantItem(item);
+                android.support.v7.app.ActionBar actionbar = getSupportActionBar();
+                actionbar.setTitle(plantName);
                 loadPlantItemTabs(plant);
+
                 return false;
             }
         });
 
             mDBHandler.addPlant(plant);
             mPlantsMenuOrder.add(mPlantsMenuOrder.size(), plant);
+            mPlantNameToItemMap.put(plantName, plantMenuItem);
+            mPlantNameToPlantMap.put(plantName, plant);
+    }
+
+    /**
+     * Highlights selected plant MenuItem and un-highlights previous one.
+     * @param item
+     */
+    public void setSelectedPlantItem(MenuItem item){
+        if (selectedPlantItem != null) {
+            selectedPlantItem.setChecked(false);
+        }
+        selectedPlantItem = item;
+        selectedPlantItem.setChecked(true);
     }
 
     private void loadPlantItemTabs(Plant plant){
@@ -423,6 +491,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                 Bundle receivedData = data.getExtras();
                 String publishKey = receivedData.getString(SettingsActivity.PUBLISH_INTENT_KEY);
                 String subscribeKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
+                String channel = receivedData.getString(SettingsActivity.CHANNEL_INTENT_KEY);
                 boolean isFahrenheitUpdated = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
 
                 boolean convert;
@@ -436,6 +505,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                 this.publishKey = publishKey;
                 this.subscribeKey = subscribeKey;
                 this.isFahrenheit = isFahrenheitUpdated;
+                this.channel = channel;
                 setTempUnit(isFahrenheit);
                 adapter.refreshCurrentFrags(convert);
 
@@ -550,32 +620,26 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
     }
 
 
-
-   // @Override
-   // public boolean onOptionsItemSelected(MenuItem menuItem){
-        // Do stuff
-    //}
-
-
-
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
 
 
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
 
 
-     @Override
-     public boolean onOptionsItemSelected(MenuItem item) {
-     // Handle action bar item clicks here. The action bar will
-     // automatically handle clicks on the Home/Up button, so long
-     // as you specify a parent activity in AndroidManifest.xml.
-     int id = item.getItemId();
+        return super.onOptionsItemSelected(item);
 
-     //noinspection SimplifiableIfStatement
-     if (id == R.id.action_settings) {
-     return true;
-     }
-
-     return super.onOptionsItemSelected(item);
-     }
+    }
 
 
     /**
@@ -626,6 +690,12 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
             }
         }
 
+        /**
+         * Method added for dealing with orientation changes.
+         * @param container
+         * @param position
+         * @return
+         */
         @Override
         public Object instantiateItem(ViewGroup container, int position){
             switch (position){
@@ -645,6 +715,7 @@ public class PlantStatsActivity extends FragmentActivity implements DialogListen
                 default:
                     return null;
             }
+            //areFragmentsRestored = true;
         }
 
 

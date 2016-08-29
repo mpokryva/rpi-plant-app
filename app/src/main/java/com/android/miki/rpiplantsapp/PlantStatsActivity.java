@@ -66,7 +66,11 @@ import com.fasterxml.jackson.core.sym.Name;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.pubnub.api.PNConfiguration;
 import com.pubnub.api.PubNub;
+import com.pubnub.api.PubNubError;
+import com.pubnub.api.callbacks.PNCallback;
 import com.pubnub.api.callbacks.SubscribeCallback;
+import com.pubnub.api.enums.PNStatusCategory;
+import com.pubnub.api.models.consumer.PNPublishResult;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.pubsub.PNMessageResult;
 import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
@@ -126,7 +130,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     static String SETTINGS_INTENT_KEY = "settingIntentKey";
     public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
     private static final String PLANT_NAME_KEY = "plantNameKey";
-    private boolean areFragmentsRestored;
+    boolean connectedToPubNub;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,7 +142,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         Log.d(TAG, "testLog");
         initPubNub();
         Log.d(TAG, "initiated PubNub");
-        areFragmentsRestored = false;
         mPlantNameToItemMap = new HashMap<>();
         mPlantsMenuOrder = new ArrayList<>();
         mPlantNameToPlantMap= new HashMap<>();
@@ -493,6 +496,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 String subscribeKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
                 String channel = receivedData.getString(SettingsActivity.CHANNEL_INTENT_KEY);
                 boolean isFahrenheitUpdated = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
+                int refreshRate = receivedData.getInt(SettingsActivity.REFRESH_RATE_INTENT_KEY);
 
                 boolean convert;
                 if(isFahrenheit != isFahrenheitUpdated){
@@ -502,9 +506,45 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                     convert = false;
                 }
 
-                this.publishKey = publishKey;
-                this.subscribeKey = subscribeKey;
-                this.isFahrenheit = isFahrenheitUpdated;
+                // If at least one value has changed.
+                if (!(publishKey.equals(this.publishKey) && subscribeKey.equals(this.subscribeKey)
+                && channel.equals(this.channel))){
+                    this.publishKey = publishKey;
+                    this.subscribeKey = subscribeKey;
+                    this.isFahrenheit = isFahrenheitUpdated;
+                    JSONObject messageToPi = new JSONObject();
+                    try {
+                        messageToPi.put("publishKey", this.publishKey);
+                        messageToPi.put("subscribeKey", this.subscribeKey);
+                        messageToPi.put("channel", this.channel);
+                        messageToPi.put("refreshRate", refreshRate);
+                    }
+                    catch (JSONException e){
+                        Log.d(TAG, "Value in put() method is probably null");
+                        e.printStackTrace();
+                    }
+                    Callback callback = new Callback() {
+                        public void successCallback(String channel, Object response){
+                            System.out.println(response.toString());
+                        }
+
+                        public void errorCallback(String channel, PubNubError error){
+                            System.out.println(error.toString());
+                        }
+                    };
+                    mPubNub.publish().channel(this.channel).message(messageToPi).async(new PNCallback<PNPublishResult>() {
+                        @Override
+                        public void onResponse(PNPublishResult result, PNStatus status) {
+                            if (!status.isError()){
+                                // Message published successfully.
+                            }
+                            else {
+                                // Handle error.
+                                status.retry();
+                            }
+                        }
+                    });
+                }
                 this.channel = channel;
                 setTempUnit(isFahrenheit);
                 adapter.refreshCurrentFrags(convert);
@@ -572,7 +612,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
 
-    public void initPubNub(){
+    private void initPubNub(){
         PNConfiguration pnConfiguration = new PNConfiguration();
             pnConfiguration.setPublishKey(publishKey);
         pnConfiguration.setSubscribeKey(subscribeKey);
@@ -581,10 +621,19 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         mPubNub.subscribe().channels(Arrays.asList(channel)).execute();
         Log.d(TAG, "subscribed");
 
+
         mPubNub.addListener(new SubscribeCallback() {
             @Override
             public void status(PubNub pubnub, PNStatus status) {
-                // handle any status
+                if (status.getCategory() == PNStatusCategory.PNUnexpectedDisconnectCategory){
+                    connectedToPubNub = false;
+                }
+                else if (status.getCategory() == PNStatusCategory.PNConnectedCategory) {
+                    connectedToPubNub = true;
+                }
+                if (status.getCategory() == PNStatusCategory.PNReconnectedCategory){
+                    connectedToPubNub = true;
+                }
             }
 
             @Override
@@ -604,6 +653,16 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 // handle incoming presence data
             }
         });
+    }
+
+    private void publishToPubNub(){
+        PNConfiguration pnConfiguration = new PNConfiguration();
+        pnConfiguration.setPublishKey(publishKey);
+        pnConfiguration.setSubscribeKey(subscribeKey);
+        pnConfiguration.setUuid("AndroidPiLight");
+        mPubNub = new PubNub(pnConfiguration);
+        mPubNub.subscribe().channels(Arrays.asList(channel)).execute();
+        Log.d(TAG, "subscribed");
     }
 
 

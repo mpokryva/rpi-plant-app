@@ -135,7 +135,13 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_plant_stats);
+        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+        if (mDBHandler.isEmpty()){
+            setContentView(R.layout.activity_no_added_plants);
+        }
+        else{
+            setContentView(R.layout.activity_plant_stats);
+        }
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
         Log.d(TAG, "inflated layout");

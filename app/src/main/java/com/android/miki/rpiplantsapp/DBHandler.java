@@ -159,7 +159,12 @@ public class DBHandler extends SQLiteOpenHelper {
         }
         db.close();
         return dbString;
+    }
 
+    public boolean isEmpty(){
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.query(TABLE_PLANTS, COLUMNS_ALL_BUT_CURRENT, null, null, null, null, null, null);
+        return (c.getCount() == 0);
     }
 
     public ArrayList<String> getPlantNames(){

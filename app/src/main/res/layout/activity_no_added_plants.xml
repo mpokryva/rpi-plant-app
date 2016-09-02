@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/plant_list_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Plant list empty"
+        android:textSize="24sp"
+        android:layout_marginTop="150sp"
+        android:layout_centerHorizontal="true"/>
+    <Button
+        android:id="@+id/add_plant_plus_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add new plant"
+        android:drawableTop="@drawable/ic_plus_green"
+        android:background="@android:color/transparent"
+        android:layout_below="@id/plant_list_empty"
+        android:layout_margin="150sp"
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>

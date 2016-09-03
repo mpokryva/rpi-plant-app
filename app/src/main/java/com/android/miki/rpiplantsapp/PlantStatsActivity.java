@@ -135,13 +135,26 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.deleteDatabase("userplants.db");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+
         if (mDBHandler.isEmpty()){
-            setContentView(R.layout.activity_no_added_plants);
+            startNoPlantActivity();
+            finish();
+            return;
+
         }
         else{
             setContentView(R.layout.activity_plant_stats);
         }
+
+        // Check if activity is starting from NoPlantsActivity data
+        if (getIntent().getExtras() != null){
+            makePlantFromIntent(getIntent());
+        }
+
+
+
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
         Log.d(TAG, "inflated layout");
@@ -256,7 +269,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startSettingsActivity(v);
+                startSettingsActivity();
             }
         });
 
@@ -446,7 +459,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
-    public void startSettingsActivity(View view){
+    private void startSettingsActivity(){
         Intent intent = new Intent(this, SettingsActivity.class);
         intent.putExtra(SettingsActivity.TEMP_UNIT_INTENT_KEY, isFahrenheit);
         intent.putExtra(SettingsActivity.PUBLISH_INTENT_KEY, publishKey);
@@ -454,6 +467,13 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         intent.putExtra(SettingsActivity.CHANNEL_INTENT_KEY, channel);
         startActivityForResult(intent, TEMP_CHANGE_REQUEST);
     }
+
+    private void startNoPlantActivity(){
+        Intent intent = new Intent(PlantStatsActivity.this, NoPlantsActivity.class);
+        startActivityForResult(intent, ADD_PLANT_REQUEST);
+    }
+
+
 
     public String getTempUnit(){
         return tempUnit;
@@ -562,27 +582,31 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
         if (requestCode == ADD_PLANT_REQUEST){
             if (resultCode == RESULT_OK){
-                Bundle receivedData = data.getExtras();
-                String plantName = receivedData.getString(Plant.PLANT_NAME_KEY);
-                String plantSpecies = receivedData.getString(Plant.PLANT_SPECIES_KEY);
-                double optimalLight = receivedData.getDouble(Plant.OPTIMAL_LIGHT_KEY);
-                double optimalMoisture = receivedData.getDouble(Plant.OPTIMAL_MOISTURE_KEY);
-                double optimalTemp = receivedData.getDouble(Plant.OPTIMAL_TEMP_KEY);
-                double lightGPIO = receivedData.getDouble(Plant.GPIO_LIGHT_KEY);
-                double moistureGPIO = receivedData.getDouble(Plant.GPIO_MOISTURE_KEY);
-                double tempGPIO = receivedData.getDouble(Plant.GPIO_TEMP_KEY);
-
-                Plant plant = new Plant(plantName, plantSpecies);
-                plant.getLightFrag().getStat().setOptimalLevel(optimalLight);
-                plant.getMoistureFrag().getStat().setOptimalLevel(optimalMoisture);
-                plant.getTempFrag().getStat().setOptimalLevel(optimalTemp);
-                plant.setLightGPIO(lightGPIO);
-                plant.setMoistureGPIO(moistureGPIO);
-                plant.setTempGPIO(tempGPIO);
-
-                createPlantMenuItem(plant, false, 0);
+                makePlantFromIntent(data);
             }
         }
+    }
+
+    private void makePlantFromIntent(Intent data){
+        Bundle receivedData = data.getExtras();
+        String plantName = receivedData.getString(Plant.PLANT_NAME_KEY);
+        String plantSpecies = receivedData.getString(Plant.PLANT_SPECIES_KEY);
+        double optimalLight = receivedData.getDouble(Plant.OPTIMAL_LIGHT_KEY);
+        double optimalMoisture = receivedData.getDouble(Plant.OPTIMAL_MOISTURE_KEY);
+        double optimalTemp = receivedData.getDouble(Plant.OPTIMAL_TEMP_KEY);
+        double lightGPIO = receivedData.getDouble(Plant.GPIO_LIGHT_KEY);
+        double moistureGPIO = receivedData.getDouble(Plant.GPIO_MOISTURE_KEY);
+        double tempGPIO = receivedData.getDouble(Plant.GPIO_TEMP_KEY);
+
+        Plant plant = new Plant(plantName, plantSpecies);
+        plant.getLightFrag().getStat().setOptimalLevel(optimalLight);
+        plant.getMoistureFrag().getStat().setOptimalLevel(optimalMoisture);
+        plant.getTempFrag().getStat().setOptimalLevel(optimalTemp);
+        plant.setLightGPIO(lightGPIO);
+        plant.setMoistureGPIO(moistureGPIO);
+        plant.setTempGPIO(tempGPIO);
+
+        createPlantMenuItem(plant, false, 0);
     }
 
     /**

@@ -27,6 +27,8 @@
         </activity>
         <activity android:name=".SettingsActivity">
         </activity>
+        <activity android:name=".NoPlantsActivity">
+        </activity>
         <activity android:name=".SetNameSpeciesActivity">
         </activity>
         <activity android:name=".SetOptimalStatsActivity">

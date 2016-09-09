@@ -2,6 +2,7 @@ package com.android.miki.rpiplantsapp;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -131,12 +132,15 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
     private static final String PLANT_NAME_KEY = "plantNameKey";
     boolean connectedToPubNub;
+    private NotificationManager mNotificationManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.deleteDatabase("userplants.db");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+
+        mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (mDBHandler.isEmpty()){
             startNoPlantActivity();
@@ -453,10 +457,18 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
 
-    private void sendValueToFragments(double value){
-        Intent intent = new Intent(LightFragment.getIntentKeyWord());
-        intent.putExtra(lightKey, value);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+    private void sendValueToFragments(double value, String key){
+        if (key.equals(lightKey)){
+            Intent intent = new Intent(LightFragment.getIntentKeyWord());
+            intent.putExtra(lightKey, value);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+        else if (key.equals(moistureKey)){
+            Intent intent = new Intent(MoistureFragment.getIntentKeyWord());
+            intent.putExtra(lightKey, value);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+
     }
 
     private void startSettingsActivity(){

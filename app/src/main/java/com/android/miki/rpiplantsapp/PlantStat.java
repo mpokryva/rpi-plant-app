@@ -7,6 +7,8 @@ public class PlantStat {
     private double currentLevel;
     private double optimalLevel;
     private String actionRequired;
+    private boolean isActionRequired;
+    private static final double PERCENT_THRESHOLD = 0.05;
 
     public PlantStat(int currentLevel, int optimalLevel, String actionRequired) {
         this.currentLevel = currentLevel;
@@ -26,6 +28,7 @@ public class PlantStat {
 
     public void setOptimalLevel(double optimalLevel) {
         this.optimalLevel = optimalLevel;
+        isActionRequired();
     }
 
     public String getActionRequired() {
@@ -42,5 +45,19 @@ public class PlantStat {
 
     public void setCurrentLevel(double currentLevel) {
         this.currentLevel = currentLevel;
+        isActionRequired();
+    }
+
+    /**
+     * Checks if any action is required.
+     */
+    private void isActionRequired(){
+        if (this.currentLevel*(1+PERCENT_THRESHOLD) > optimalLevel ||
+                this.currentLevel*(1-PERCENT_THRESHOLD) < optimalLevel){
+            isActionRequired = true;
+        }
+        else {
+            isActionRequired = false;
+        }
     }
 }

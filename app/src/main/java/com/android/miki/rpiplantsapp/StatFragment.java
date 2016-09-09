@@ -1,5 +1,6 @@
 package com.android.miki.rpiplantsapp;
 
+import android.app.NotificationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 public class StatFragment extends Fragment implements RealTimeUpdate {
     private TextView currentStatText;
     private TextView optimalStatText;
+    private TextView actionRequiredText;
     private PlantStat mStat = new PlantStat();
     private final String TAG = "StatFragment";
     public static Handler sUpdateHandler;

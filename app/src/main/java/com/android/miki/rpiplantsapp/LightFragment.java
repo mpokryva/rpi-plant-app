@@ -31,7 +31,7 @@ public class LightFragment extends StatFragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(LIGHT_INTENT.equals(intent.getAction())){
-                double value = intent.getIntExtra(PlantStatsActivity.lightKey, 12);
+                double value = intent.getIntExtra(PlantStatsActivity.lightKey, 0);
                 setCurrentStatText(String.valueOf(value));
             }
         }

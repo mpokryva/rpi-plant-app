@@ -1,9 +1,14 @@
 package com.android.miki.rpiplantsapp;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,12 +24,13 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
     private PlantStat mStat = new PlantStat();
     private final String TAG = "StatFragment";
     public static Handler sUpdateHandler;
+    private BroadcastReceiver mReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-
+        mReceiver = initializeBroadcastReceiver("StatKey");
     }
 
     @Override
@@ -34,6 +40,15 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
         optimalStatText = (TextView) v.findViewById(R.id.optimal_level_light);
         
         return v;
+    }
+
+    protected void initializeBroadcastSystem(String intentKey, String fragmentKey){
+        if (getArguments() != null){
+            update(fragmentKey);
+        }
+        IntentFilter filter = new IntentFilter(intentKey);
+        mReceiver = initializeBroadcastReceiver(intentKey);
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
     }
 
 
@@ -89,7 +104,9 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
         //setCurrentStatText(String.valueOf(statLevel));
     }
 
-    protected void initializeTexts(View v, int currentResId, int optimalResId, double currentStat, double optimalStat){
+    protected void initializeTexts(View v, int currentResId, int optimalResId){
+        double currentStat = getStat().getCurrentLevel();
+        double optimalStat = getStat().getOptimalLevel();
         setCurrentTextView((TextView)v.findViewById(currentResId));
         setOptimalTextView((TextView)v.findViewById(optimalResId));
         setCurrentStatText(String.valueOf(currentStat));
@@ -112,7 +129,26 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
         setOptimalStatText(optimalStat);
     }
 
+    @Override
     public void onDestroy(){
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mReceiver);
         super.onDestroy();
     }
+
+
+    protected BroadcastReceiver initializeBroadcastReceiver(String key){
+        final String finalKey = key;
+        BroadcastReceiver mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(finalKey.equals(intent.getAction())){
+                    double value = intent.getIntExtra(PlantStatsActivity.lightKey, 12);
+                    setCurrentStatText(String.valueOf(value));
+                }
+            }
+        };
+        return  mReceiver;
+    }
+
+
 }

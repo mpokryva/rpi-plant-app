@@ -1,9 +1,12 @@
 package com.android.miki.rpiplantsapp;
 
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,27 +20,21 @@ import android.widget.TextView;
 public class MoistureFragment extends StatFragment implements RealTimeUpdate {
     private TextView moistureText;
     private final String TAG = "MoistureFragment";
-    public static Handler sUpdateHandler;
+    private static final String MOISTURE_INTENT = "moistureIntent";
+    protected BroadcastReceiver mReceiver;
 
 
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        if (getArguments() != null){
-            update(PlantStatsActivity.moistureKey);
-        }
-
-
+        initializeBroadcastSystem(MOISTURE_INTENT, PlantStatsActivity.moistureKey);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_moisture, container, false);
-        double currentStat = getStat().getCurrentLevel();
-        double optimalStat = getStat().getOptimalLevel();
-        initializeTexts(v, R.id.current_level_moisture, R.id.optimal_level_moisture, currentStat, optimalStat);
-       // setTextView((TextView)v.findViewById(R.id.current_level_light));
+        initializeTexts(v, R.id.current_level_moisture, R.id.optimal_level_moisture);
         return v;
     }
 
@@ -47,6 +44,10 @@ public class MoistureFragment extends StatFragment implements RealTimeUpdate {
         args.putDouble(statKey, stat);
         statFragment.setArguments(args);
         return statFragment;
+    }
+
+    public static String getIntentKeyWord(){
+        return MOISTURE_INTENT;
     }
 
 }

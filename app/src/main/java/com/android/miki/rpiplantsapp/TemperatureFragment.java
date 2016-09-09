@@ -1,9 +1,12 @@
 package com.android.miki.rpiplantsapp;
 
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,23 +21,20 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
     // Dummy light level variable
     private TextView tempText;
     private final String TAG = "TempFragment";
+    private static final String TEMP_INTENT = "tempIntent";
     public static Handler sUpdateHandler;
+    protected BroadcastReceiver mReceiver;
 
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        if (this.isVisible()) {
-            update(PlantStatsActivity.tempKey);
-        }
-
+        initializeBroadcastSystem(TEMP_INTENT, PlantStatsActivity.tempKey);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_temp, container, false);
-        double  currentStat = getStat().getCurrentLevel();
-        double  optimalStat = getStat().getOptimalLevel();
-        initializeTexts(v,R.id.current_level_temp, R.id.optimal_level_temp, currentStat, optimalStat);
+        initializeTexts(v,R.id.current_level_temp, R.id.optimal_level_temp);
         //setTextView((TextView)v.findViewById(R.id.current_level_light));
         return v;
     }
@@ -46,5 +46,9 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
         statFragment.setArguments(args);
 
         return statFragment;
+    }
+
+    public static String getIntentKeyWord(){
+        return TEMP_INTENT;
     }
 }

@@ -42,12 +42,17 @@ public class StatFragment extends Fragment {
         return v;
     }
 
+    /**
+     *
+     * @param intentKey Key for intent
+     * @param fragmentKey Fragment-specific key (one for light, one for moisture, etc.)
+     */
     protected void initializeBroadcastSystem(String intentKey, String fragmentKey){
         if (getArguments() != null){
             update(fragmentKey);
         }
         IntentFilter filter = new IntentFilter(intentKey);
-        mReceiver = initializeBroadcastReceiver(intentKey);
+        mReceiver = initializeBroadcastReceiver(intentKey, fragmentKey);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
     }
 
@@ -101,7 +106,6 @@ public class StatFragment extends Fragment {
         Bundle data = getArguments();
         double  statLevel = data.getDouble(statKey);
         getStat().setCurrentLevel(statLevel);
-        //setCurrentStatText(String.valueOf(statLevel));
     }
 
     protected void initializeTexts(View v, int currentResId, int optimalResId){
@@ -136,13 +140,14 @@ public class StatFragment extends Fragment {
     }
 
 
-    protected BroadcastReceiver initializeBroadcastReceiver(String key){
-        final String finalKey = key;
+    protected BroadcastReceiver initializeBroadcastReceiver(String intentKey, String fragmentKey){
+        final String intentKeyFinal = intentKey;
+        final String fragmentKeyFinal = fragmentKey
         BroadcastReceiver mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(finalKey.equals(intent.getAction())){
-                    double value = intent.getIntExtra(PlantStatsActivity.lightKey, 12);
+                if(intentKeyFinal.equals(intent.getAction())){
+                    double value = intent.getIntExtra(fragmentKeyFinal, 0);
                     setCurrentStatText(String.valueOf(value));
                 }
             }

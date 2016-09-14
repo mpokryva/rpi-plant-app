@@ -30,7 +30,7 @@ public class StatFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        mReceiver = initializeBroadcastReceiver("StatKey");
+        initializeBroadcastSystem(null, null);
     }
 
     @Override
@@ -52,7 +52,18 @@ public class StatFragment extends Fragment {
             update(fragmentKey);
         }
         IntentFilter filter = new IntentFilter(intentKey);
-        mReceiver = initializeBroadcastReceiver(intentKey, fragmentKey);
+
+        final String intentKeyFinal = intentKey;
+        final String fragmentKeyFinal = fragmentKey;
+        BroadcastReceiver mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intentKeyFinal.equals(intent.getAction())){
+                    double value = intent.getIntExtra(fragmentKeyFinal, 0);
+                    setCurrentStatText(String.valueOf(value));
+                }
+            }
+        };
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
     }
 
@@ -140,20 +151,13 @@ public class StatFragment extends Fragment {
     }
 
 
-    protected BroadcastReceiver initializeBroadcastReceiver(String intentKey, String fragmentKey){
-        final String intentKeyFinal = intentKey;
-        final String fragmentKeyFinal = fragmentKey
-        BroadcastReceiver mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if(intentKeyFinal.equals(intent.getAction())){
-                    double value = intent.getIntExtra(fragmentKeyFinal, 0);
-                    setCurrentStatText(String.valueOf(value));
-                }
-            }
-        };
-        return  mReceiver;
-    }
+    /**
+     * Initializes the BroadcastReceiver. Basically a replacement for its constructor.
+     * @param intentKey
+     * @param fragmentKey
+     * @return
+     */
+
 
 
 }

@@ -49,9 +49,10 @@ public class PlantStat {
     }
 
     /**
-     * Checks if any action is required.
+     * Checks if any action is required
+     * @return True if action required. False otherwise.
      */
-    private void isActionRequired(){
+    public boolean isActionRequired(){
         if (this.currentLevel*(1+PERCENT_THRESHOLD) > optimalLevel ||
                 this.currentLevel*(1-PERCENT_THRESHOLD) < optimalLevel){
             isActionRequired = true;
@@ -59,5 +60,6 @@ public class PlantStat {
         else {
             isActionRequired = false;
         }
+        return isActionRequired;
     }
 }

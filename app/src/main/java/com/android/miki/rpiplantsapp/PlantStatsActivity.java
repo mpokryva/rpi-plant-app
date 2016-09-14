@@ -2,6 +2,9 @@ package com.android.miki.rpiplantsapp;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -708,6 +711,19 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         mPubNub = new PubNub(pnConfiguration);
         mPubNub.subscribe().channels(Arrays.asList(channel)).execute();
         Log.d(TAG, "subscribed");
+    }
+
+    /**
+     * Makes a push notification. NOT CURRENTLY WORKING.
+     */
+     public void pushNotification(String notificationText){
+        NotificationManager notificationManager;
+        notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification notification = new Notification();
+        PendingIntent pending = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0);
+        Notification.Builder builder = new Notification.Builder(getApplicationContext());
+         builder.setContentText(notificationText);
+        builder.build();
     }
 
 

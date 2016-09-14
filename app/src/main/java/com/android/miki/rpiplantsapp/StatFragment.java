@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -168,6 +169,11 @@ public class StatFragment extends Fragment {
                 if(intentKeyFinal.equals(intent.getAction())){
                     double value = intent.getIntExtra(fragmentKeyFinal, 0);
                     setCurrentStatText(String.valueOf(value));
+                    if (getStat().isActionRequired()){
+                        PlantStatsActivity parentActivity = (PlantStatsActivity) getActivity();
+                        parentActivity.pushNotification("testNotification");
+
+                    }
                 }
             }
         };

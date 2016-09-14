@@ -18,7 +18,7 @@ import android.widget.TextView;
 /**
  * Created by Miki on 8/3/2016.
  */
-public class StatFragment extends Fragment implements RealTimeUpdate {
+public class StatFragment extends Fragment {
     private TextView currentStatText;
     private TextView optimalStatText;
     private PlantStat mStat = new PlantStat();
@@ -96,7 +96,7 @@ public class StatFragment extends Fragment implements RealTimeUpdate {
         return mStat;
     }
 
-    @Override
+
     public void update(String statKey){
         Bundle data = getArguments();
         double  statLevel = data.getDouble(statKey);

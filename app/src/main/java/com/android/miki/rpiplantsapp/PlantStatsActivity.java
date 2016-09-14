@@ -455,23 +455,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
 
-    private void sendValueToFragment(double value, String key){
-        if (key.equals(lightKey)) {
-            Intent intent = new Intent(LightFragment.getIntentKeyWord());
-            intent.putExtra(key, value);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        }
-        else if (key.equals(moistureKey)){
-            Intent intent = new Intent(MoistureFragment.getIntentKeyWord());
-            intent.putExtra(key, value);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        }
-        else if (key.equals(tempKey)){
-            Intent intent = new Intent(TemperatureFragment.getIntentKeyWord());
-            intent.putExtra(key, value);
-            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        }
-    }
+
 
     private void startSettingsActivity(){
         Intent intent = new Intent(this, SettingsActivity.class);
@@ -649,7 +633,23 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
 
-
+    private void sendValueToFragment(double value, String key){
+        if (key.equals(lightKey)) {
+            Intent intent = new Intent(LightFragment.getIntentKeyWord());
+            intent.putExtra(key, value);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+        else if (key.equals(moistureKey)){
+            Intent intent = new Intent(MoistureFragment.getIntentKeyWord());
+            intent.putExtra(key, value);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+        else if (key.equals(tempKey)){
+            Intent intent = new Intent(TemperatureFragment.getIntentKeyWord());
+            intent.putExtra(key, value);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
 
 
 
@@ -686,8 +686,9 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 lightMessage = lightNode.asDouble();
                 Log.d(TAG, "Got message as double");
                 sendValueToFragment(lightMessage, lightKey);
-                //Bundle data = new Bundle();
-                //data.putDouble(lightKey, lightMessage);
+                //sendValueToFragment(moistureMessage, moistureKey);
+                //sendValueToFragment(tempMessage, tempKey);
+                //
 
 
             }
@@ -753,9 +754,9 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     public class ViewPageAdapter extends FragmentStatePagerAdapter {
         int mNumOfTabs;
         FragmentManager mFragmentManager;
-        MoistureFragment currentMoistureFragment;
-        LightFragment currentLightFragment;
-        TemperatureFragment currentTempFragment;
+        private MoistureFragment currentMoistureFragment;
+        private LightFragment currentLightFragment;
+        private TemperatureFragment currentTempFragment;
         boolean notifyChangesNeverCalled = true;
         boolean getItemNeverCalled = true;
 

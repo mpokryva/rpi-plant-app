@@ -2,11 +2,11 @@ package com.android.miki.rpiplantsapp;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -132,26 +132,41 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
     private static final String PLANT_NAME_KEY = "plantNameKey";
     boolean connectedToPubNub;
-    private NotificationManager mNotificationManager;
+    boolean firstTimeLaunching;
+    private static final String MY_PREFERENCES = "MyPreferences";
+    private static final String FIRST_TIME_LAUNCHING_PREF_KEY = "firstTimeLaunching";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.deleteDatabase("userplants.db");
+        //this.deleteDatabase("userplants.db");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+        //SharedPreferences sharedPreferences = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE);
+        //SharedPreferences.Editor editor = sharedPreferences.edit();
+        /**
+        if (sharedPreferences.getBoolean(FIRST_TIME_LAUNCHING_PREF_KEY, true)){
+            firstTimeLaunching = true;
+            editor.putBoolean(FIRST_TIME_LAUNCHING_PREF_KEY, false);
+        }
+        else {
+            firstTimeLaunching = false;
+        }
 
-        mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (mDBHandler.isEmpty()){
+
+
+        if (mDBHandler.isEmpty() && firstTimeLaunching){
             startNoPlantActivity();
-            finish();
+            //editor.putBoolean("firstTimeLaunching", false);
+
             return;
 
         }
         else{
             setContentView(R.layout.activity_plant_stats);
         }
-
+        **/
+        setContentView(R.layout.activity_plant_stats);
         // Check if activity is starting from NoPlantsActivity data
         if (getIntent().getExtras() != null){
             makePlantFromIntent(getIntent());
@@ -280,13 +295,15 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
 
-
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState){
         super.onPostCreate(savedInstanceState);
         mDrawerToggle.syncState();
+        if (mDBHandler.isEmpty()){
+            startNoPlantActivity();
+        }
     }
 
     @Override
@@ -375,25 +392,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                                 setGPIODialog.show(getSupportFragmentManager(), SetGPIODialog.SET_GPIO_DIALOG_TAG);
                                 break;
                             case 3:
-                                /**
-                                 *  mDBHandler.deletePlant(plantName);
-                                 int currentItemId = plantMenuItem.getItemId();
-                                 plantsMenu.removeItem(currentItemId);
-                                 mPlantsMenuOrder.remove(currentItemId);
-                                 MenuItem itemToSwitchTo;
-                                 // First item was removed
-                                 if (currentItemId == 0){
-                                 //itemToSwitchTo = plantsMenu.findItem(1);
-                                 loadPlantItemTabs(mPlantsMenuOrder.get(0));
-                                 }
-                                 // Item that was not first was removed
-                                 else {
-                                 //itemToSwitchTo = plantsMenu.findItem(currentItemId-1);
-                                 loadPlantItemTabs(mPlantsMenuOrder.get(currentItemId-1));
-                                 }
-                                 break;
-                                 */
-
                                 int currentItemId = plantMenuItem.getItemId();
                                 plantMenuItem.setVisible(false);
                                 mPlantsMenuOrder.remove(currentItemId);
@@ -457,18 +455,22 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
 
-    private void sendValueToFragments(double value, String key){
-        if (key.equals(lightKey)){
+    private void sendValueToFragment(double value, String key){
+        if (key.equals(lightKey)) {
             Intent intent = new Intent(LightFragment.getIntentKeyWord());
-            intent.putExtra(lightKey, value);
+            intent.putExtra(key, value);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
         else if (key.equals(moistureKey)){
             Intent intent = new Intent(MoistureFragment.getIntentKeyWord());
-            intent.putExtra(lightKey, value);
+            intent.putExtra(key, value);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
-
+        else if (key.equals(tempKey)){
+            Intent intent = new Intent(TemperatureFragment.getIntentKeyWord());
+            intent.putExtra(key, value);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
     }
 
     private void startSettingsActivity(){
@@ -481,7 +483,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
     private void startNoPlantActivity(){
-        Intent intent = new Intent(PlantStatsActivity.this, NoPlantsActivity.class);
+        Intent intent = new Intent(this, NoPlantsActivity.class);
         startActivityForResult(intent, ADD_PLANT_REQUEST);
     }
 
@@ -683,7 +685,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 JsonNode lightNode = message.getMessage().findValue(lightKey); // "lightValue" is JSON key.
                 lightMessage = lightNode.asDouble();
                 Log.d(TAG, "Got message as double");
-                sendValueToFragments(lightMessage);
+                sendValueToFragment(lightMessage, lightKey);
                 //Bundle data = new Bundle();
                 //data.putDouble(lightKey, lightMessage);
 

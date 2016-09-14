@@ -27,6 +27,8 @@ public class LightFragment extends StatFragment {
     private TextView lightText;
     private final String TAG = "LightFragment";
     private static final String LIGHT_INTENT = "lightIntent";
+    protected BroadcastReceiver mReceiver;
+    /**
     protected BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -36,6 +38,7 @@ public class LightFragment extends StatFragment {
             }
         }
     };
+     **/
 
     public static String getIntentKeyWord(){
         return LIGHT_INTENT;
@@ -46,37 +49,16 @@ public class LightFragment extends StatFragment {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        //if(this.isVisible()) {
-           // update(PlantStatsActivity.lightKey);
-        //}
-        if (getArguments() != null){
-            update(PlantStatsActivity.lightKey);
-        }
-        IntentFilter filter = new IntentFilter(LIGHT_INTENT);
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
-        //setRetainInstance(true);
-
+        initializeBroadcastSystem(LIGHT_INTENT, PlantStatsActivity.lightKey);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_light, container, false);
-        double currentStat = getStat().getCurrentLevel();
-        double optimalStat = getStat().getOptimalLevel();
-        initializeTexts(v,R.id.current_level_light, R.id.optimal_level_light, currentStat, optimalStat);
-        //setCurrentTextView((TextView)v.findViewById(R.id.current_level_light));
-        //setOptimalTextView((TextView)v.findViewById(R.id.current_level_light));
-
-      //  setCurrentStatText(String.valueOf(getStat().getCurrentLevel()));
-        //setOptimalStatText(String.valueOf(getStat().getOptimalLevel()));
+        initializeTexts(v,R.id.current_level_light, R.id.optimal_level_light);
         return v;
     }
 
-    @Override
-    public void onDestroy(){
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mReceiver);
-        super.onDestroy();
-    }
 
     protected static LightFragment newInstance(String statKey, double stat){
         LightFragment statFragment = new LightFragment();
@@ -86,6 +68,8 @@ public class LightFragment extends StatFragment {
 
         return statFragment;
     }
+
+
 
 
 }

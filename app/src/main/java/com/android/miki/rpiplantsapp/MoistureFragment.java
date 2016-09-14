@@ -34,7 +34,7 @@ public class MoistureFragment extends StatFragment implements RealTimeUpdate {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_moisture, container, false);
-        initializeTexts(v, R.id.current_level_moisture, R.id.optimal_level_moisture);
+        initializeTexts(v, R.id.current_level_moisture, R.id.optimal_level_moisture, R.id.action_req_moisture);
         return v;
     }
 

@@ -21,6 +21,7 @@ import android.widget.TextView;
 public class StatFragment extends Fragment {
     private TextView currentStatText;
     private TextView optimalStatText;
+    private TextView actionRequiredText;
     private PlantStat mStat = new PlantStat();
     private final String TAG = "StatFragment";
     public static Handler sUpdateHandler;
@@ -38,6 +39,7 @@ public class StatFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_light, container, false);
         currentStatText = (TextView) v.findViewById(R.id.current_level_light);
         optimalStatText = (TextView) v.findViewById(R.id.optimal_level_light);
+        actionRequiredText = (TextView) v.findViewById(R.id.action_req_light);
         
         return v;
     }
@@ -52,18 +54,9 @@ public class StatFragment extends Fragment {
             update(fragmentKey);
         }
         IntentFilter filter = new IntentFilter(intentKey);
-
         final String intentKeyFinal = intentKey;
         final String fragmentKeyFinal = fragmentKey;
-        BroadcastReceiver mReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if(intentKeyFinal.equals(intent.getAction())){
-                    double value = intent.getIntExtra(fragmentKeyFinal, 0);
-                    setCurrentStatText(String.valueOf(value));
-                }
-            }
-        };
+        mReceiver = initializeBroadcastReceiver(intentKey, fragmentKey);
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mReceiver,filter);
     }
 
@@ -74,6 +67,10 @@ public class StatFragment extends Fragment {
     }
 
 
+    /**
+     * Sets the current stat text, and updates the actual current level in mStat as well.
+     * @param newText The new text
+     */
     public void setCurrentStatText(String newText) {
         try{
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
@@ -108,6 +105,10 @@ public class StatFragment extends Fragment {
         optimalStatText = newTextView;
     }
 
+    public void setActionRequiredTextView(TextView newTextView){
+        actionRequiredText = newTextView;
+    }
+
     public PlantStat getStat(){
         return mStat;
     }
@@ -119,11 +120,12 @@ public class StatFragment extends Fragment {
         getStat().setCurrentLevel(statLevel);
     }
 
-    protected void initializeTexts(View v, int currentResId, int optimalResId){
+    protected void initializeTexts(View v, int currentResId, int optimalResId, int actionReqResId){
         double currentStat = getStat().getCurrentLevel();
         double optimalStat = getStat().getOptimalLevel();
         setCurrentTextView((TextView)v.findViewById(currentResId));
         setOptimalTextView((TextView)v.findViewById(optimalResId));
+        setActionRequiredTextView((TextView)v.findViewById(actionReqResId));
         setCurrentStatText(String.valueOf(currentStat));
         setOptimalStatText(String.valueOf(optimalStat));
     }
@@ -157,7 +159,20 @@ public class StatFragment extends Fragment {
      * @param fragmentKey
      * @return
      */
-
+    protected BroadcastReceiver initializeBroadcastReceiver(String intentKey, String fragmentKey){
+        final String intentKeyFinal = intentKey;
+        final String fragmentKeyFinal = fragmentKey;
+        BroadcastReceiver mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intentKeyFinal.equals(intent.getAction())){
+                    double value = intent.getIntExtra(fragmentKeyFinal, 0);
+                    setCurrentStatText(String.valueOf(value));
+                }
+            }
+        };
+        return  mReceiver;
+    }
 
 
 }

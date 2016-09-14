@@ -55,7 +55,7 @@ public class LightFragment extends StatFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_light, container, false);
-        initializeTexts(v,R.id.current_level_light, R.id.optimal_level_light);
+        initializeTexts(v,R.id.current_level_light, R.id.optimal_level_light, R.id.action_req_light);
         return v;
     }
 

@@ -34,7 +34,7 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         View v = inflater.inflate(R.layout.fragment_temp, container, false);
-        initializeTexts(v,R.id.current_level_temp, R.id.optimal_level_temp);
+        initializeTexts(v,R.id.current_level_temp, R.id.optimal_level_temp, R.id.action_req_temp);
         //setTextView((TextView)v.findViewById(R.id.current_level_light));
         return v;
     }

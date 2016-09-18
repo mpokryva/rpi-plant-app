@@ -172,7 +172,6 @@ public class StatFragment extends Fragment {
                     if (getStat().isActionRequired()){
                         PlantStatsActivity parentActivity = (PlantStatsActivity) getActivity();
                         parentActivity.pushNotification("testNotification");
-
                     }
                 }
             }

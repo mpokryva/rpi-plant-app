@@ -15,6 +15,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -144,38 +145,12 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         super.onCreate(savedInstanceState);
         //this.deleteDatabase("userplants.db");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
-        //SharedPreferences sharedPreferences = getSharedPreferences(MY_PREFERENCES, MODE_PRIVATE);
-        //SharedPreferences.Editor editor = sharedPreferences.edit();
-        /**
-        if (sharedPreferences.getBoolean(FIRST_TIME_LAUNCHING_PREF_KEY, true)){
-            firstTimeLaunching = true;
-            editor.putBoolean(FIRST_TIME_LAUNCHING_PREF_KEY, false);
-        }
-        else {
-            firstTimeLaunching = false;
-        }
 
-
-
-
-        if (mDBHandler.isEmpty() && firstTimeLaunching){
-            startNoPlantActivity();
-            //editor.putBoolean("firstTimeLaunching", false);
-
-            return;
-
-        }
-        else{
-            setContentView(R.layout.activity_plant_stats);
-        }
-        **/
         setContentView(R.layout.activity_plant_stats);
         // Check if activity is starting from NoPlantsActivity data
         if (getIntent().getExtras() != null){
             makePlantFromIntent(getIntent());
         }
-
-
 
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
@@ -189,10 +164,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
         setTempUnit(fahrenheit);
 
-        //FragmentManager fm = getSupportFragmentManager();
-        //LightFragment lightFragment = (LightFragment)fm.findFragmentById()
-
-        //* Original code* TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Moisture"));
         tabLayout.addTab(tabLayout.newTab().setText("Light"));
@@ -295,7 +266,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
             }
         });
 
-
+        pushNotification("TEST");
 
 
     }
@@ -307,6 +278,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         if (mDBHandler.isEmpty()){
             startNoPlantActivity();
         }
+
     }
 
     @Override
@@ -719,11 +691,13 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
      public void pushNotification(String notificationText){
         NotificationManager notificationManager;
         notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification notification = new Notification();
+        //Notification notification = new Notification();
         PendingIntent pending = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0);
         Notification.Builder builder = new Notification.Builder(getApplicationContext());
          builder.setContentText(notificationText);
-        builder.build();
+         Notification notification = builder.build();
+         notificationManager.notify(0, notification);
+
     }
 
 

@@ -32,7 +32,7 @@ public class StatFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        initializeBroadcastSystem(null, null);
+        //initializeBroadcastSystem(null, null);
     }
 
     @Override
@@ -46,7 +46,6 @@ public class StatFragment extends Fragment {
     }
 
     /**
-     *
      * @param intentKey Key for intent
      * @param fragmentKey Fragment-specific key (one for light, one for moisture, etc.)
      */
@@ -167,11 +166,11 @@ public class StatFragment extends Fragment {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(intentKeyFinal.equals(intent.getAction())){
-                    double value = intent.getIntExtra(fragmentKeyFinal, 0);
+                    double value = intent.getDoubleExtra(fragmentKeyFinal, 0);
                     setCurrentStatText(String.valueOf(value));
                     if (getStat().isActionRequired()){
                         PlantStatsActivity parentActivity = (PlantStatsActivity) getActivity();
-                        parentActivity.pushNotification("testNotification");
+                        parentActivity.pushNotification(getStat().getActionRequired());
                     }
                 }
             }

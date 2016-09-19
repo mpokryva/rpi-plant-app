@@ -695,6 +695,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         PendingIntent pending = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0);
         Notification.Builder builder = new Notification.Builder(getApplicationContext());
          builder.setContentText(notificationText);
+         builder.setSmallIcon(R.drawable.potted_plant);
          Notification notification = builder.build();
          notificationManager.notify(0, notification);
 

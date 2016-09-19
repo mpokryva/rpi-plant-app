@@ -49,7 +49,8 @@ public class PlantStat {
     }
 
     /**
-     * Checks if any action is required
+     * Checks if any action is required. Required if current value is more than
+     * PERCENT_THRESHOLD away from optimal value.
      * @return True if action required. False otherwise.
      */
     public boolean isActionRequired(){

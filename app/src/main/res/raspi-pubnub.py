@@ -14,56 +14,52 @@ GPIO.setmode(GPIO.BCM)
 DEBUG = 1
 
 
-class PubNub:
-        # set up PubNub subscription, channels, etc.
 
-        def __init__(self, lightvalue):
-                if (self.pubnub is None):
-                        self.pubnub = Pubnub(publish_key='pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a',
-                                subscribe_key='sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f')
+# set up PubNub subscription, channels, etc.
 
-                channel = 'py-light'
+def initPubNub(lightvalue):
+        pubnub = Pubnub(publish_key='pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a',
+                subscribe_key='sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f')
+        channel = 'py-light'
+        
+        def publish_callback(message):
+                print(message)
 
-                def publish_callback(message):
-                        print(message)
+        def _error(message):
+                print("ERROR :" + str(message))
 
-                def _error(message):
-                        print("ERROR :" + str(message))
+        def reconnect(message):
+                print ("RECONNECTED")
 
-                def reconnect(message):
-                        print ("RECONNECTED")
+        def disconnect(message):
+                print("DISCONNECTED")
 
-                def disconnect(message):
-                        print("DISCONNECTED")
+        def connect(message):
+                print("CONNECTED")
 
-                def connect(message):
-                        print("CONNECTED")
+        def subscribe_callback(message, channel):
+                parsed_message = json.dumps(message)
+                new_publish_key = parsed_message['publishKey']
+                new_subscribe_key = parsed_message['subscribeKey']
+                new_channel = parsed_message['channel']
+                new_refresh_rate = parsed_message['refreshRate']
+                new_pubnub = Pubnub(publish_key=new_publish_key,
+                        subscribe_key = new_subscribe_key)
+                set_refresh_rate(new_refresh_rate)
 
-                def subscribe_callback(message, channel):
-                        parsed_message = json.load(message)
-                        new_publish_key = parsed_message['publishKey']
-                        new_subscribe_key = parsed_message['subscribeKey']
-                        new_channel = parsed_message['channel']
-                        new_refresh_rate = parsed_message['refreshRate']
-                        new_pubnub = Pubnub(publish_key=new_publish_key,
-                                subscribe_key = new_subscribe_key)
-                        self.publish_key = new_publish_key
-                        self.subscribe_key = new_subscribe_key
-                        self.channel = new_channel
-                        self.pubnub = new_pubnub
-                        set_refresh_rate(new_refresh_rate)
-
-                self.pubnub.publish(channel, {'lightValue': lightvalue}, callback=publish_callback, error=_error)
-                self.pubnub.subscribe(channels=channel, callback=subscribe_callback, error=_error, connect=connect, reconnect=reconnect,
+                new_pubnub.publish(channel, {'lightValue': lightvalue}, callback=publish_callback, error=_error)
+                new_pubnub.subscribe(channels=new_channel, callback=subscribe_callback, error=_error, connect=connect, reconnect=reconnect,
                                  disconnect=disconnect)
+                
+        pubnub.publish(channel, {'lightValue': lightvalue}, callback=publish_callback, error=_error)
+        pubnub.subscribe(channels=channel, callback=subscribe_callback, error=_error, connect=connect,
+                         reconnect=reconnect, disconnect=disconnect)
+
+        
+        
 
 
 class ADCHandler:
-
-
-
-
-
 
         # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
         def readadc(adcnum, clockpin, mosipin, misopin, cspin):
@@ -128,31 +124,25 @@ class ADCHandler:
                 trim_pot_changed = False
 
                 # read the analog pin
-                trim_pot = readadc(potentiometer_adc, SPICLK, SPIMOSI, SPIMISO, SPICS)
+                light_value = readadc(potentiometer_adc, SPICLK, SPIMOSI, SPIMISO, SPICS)
                 # how much has it changed since the last read?
-                pot_adjust = abs(trim_pot - last_read)
-            # voltage, in Volts, of signal
-            pot_voltage = trim_pot*(3.3/1023)
+                pot_adjust = abs(light_value - last_read)
+            # voltage, in Volts, of light signal
+                light_voltage = light_value*(3.3/1023)
 
                 if DEBUG:
-                        print "trim_pot:", trim_pot
-                print "pot_voltage:", pot_voltage
+                        print "light_value:", light_value
+                        print "light_voltage:", light_voltage
         #                print "pot_adjust:", pot_adjust
         #                print "last_read", last_read
 
-                initPubNub(trim_pot)
+                initPubNub(light_value)
+                print("initiated")
 
                 global refresh_rate
                 refresh_rate = 10
                 # refreshes every refresh_rate secs
                 time.sleep(refresh_rate)
-
-
-
-
-
-
-
 
 
 

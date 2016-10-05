@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+    <TextView
+        android:text="@string/add_plant"
+        style="@style/DialogHeader_HoloBlueLight"
+        android:id="@+id/activity_title"/>
+    <View
+        style="@style/DialogDivider"
+        android:layout_below="@id/activity_title"
+        android:id="@+id/divider"/>
+    <EditText
+        android:id="@+id/plant_name_edit"
+        android:inputType="textCapSentences"
+        android:hint="@string/plant_name"
+        style="@style/StandardEditText"
+        android:layout_below="@id/divider"/>
+    <EditText
+        android:id="@+id/plant_species_edit"
+        android:inputType="textCapSentences"
+        android:hint="@string/plant_species"
+        style="@style/StandardEditText"
+        android:layout_below="@id/plant_name_edit"/>
+</RelativeLayout>

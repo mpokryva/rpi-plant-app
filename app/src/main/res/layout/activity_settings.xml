@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.android.miki.rpiplantsapp.SettingsActivity">
+
+    <TextView
+        android:id="@+id/primary_sub_key"
+        style="@style/SettingsActivityPrimary"
+        android:text="@string/pubnub_subscribe_key"
+
+    />
+    <TextView
+        style="@style/SettingsActivitySecondary"
+        android:id="@+id/secondary_sub_key"
+        android:layout_below="@id/primary_sub_key"
+      />
+    <View
+        style="@style/Divider"
+        android:layout_below="@id/secondary_sub_key"
+       />
+
+    <TextView
+        style="@style/SettingsActivityPrimary"
+        android:id="@+id/primary_pub_key"
+        android:text="@string/pubnub_publish_key"
+        android:layout_below="@id/secondary_sub_key"
+       />
+    <TextView
+        style="@style/SettingsActivitySecondary"
+        android:id="@+id/secondary_pub_key"
+        android:layout_below="@id/primary_pub_key"
+      />
+    <View
+        style="@style/Divider"
+        android:layout_below="@id/secondary_pub_key"
+        />
+
+    <TextView
+        style="@style/SettingsActivityPrimary"
+        android:id="@+id/primary_pubnub_channel"
+        android:text="@string/channel"
+        android:layout_below="@id/secondary_pub_key"
+        />
+    <TextView
+        style="@style/SettingsActivitySecondary"
+        android:id="@+id/secondary_pubnub_channel"
+        android:layout_below="@id/primary_pubnub_channel"
+        />
+    <View
+        style="@style/Divider"
+        android:layout_below="@id/secondary_pubnub_channel"
+        />
+
+
+
+    <Switch
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/temp_switch_text"
+        android:id="@+id/temp_switch"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:checked="false"
+        android:showText="true"
+        android:textOff="Celsius"
+        android:textOn="Fahrenheit"
+        android:layout_marginTop="50sp"
+        android:layout_below="@id/secondary_pubnub_channel"
+        />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/refresh_bar_title"
+        android:text="@string/refresh_rate"
+        android:textSize="20sp"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="30sp"
+        android:layout_below="@id/temp_switch"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/refresh_bar_text"
+        android:layout_below="@id/refresh_bar_title"
+        android:layout_marginTop="20sp"
+        android:textSize="16sp"
+        />
+    <SeekBar
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/refresh_bar_text"
+        android:layout_marginTop="10sp"
+        android:id="@+id/refresh_rate_bar"
+        android:layout_centerHorizontal="true"
+        android:max="100"
+        />
+
+
+</RelativeLayout>

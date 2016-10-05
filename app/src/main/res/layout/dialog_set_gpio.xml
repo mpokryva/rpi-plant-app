@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+    <TextView
+        style="@style/DialogHeader_HoloBlueLight"
+        android:text="@string/set_gpio_pins"
+        android:id="@+id/title"/>
+    <View
+        style="@style/DialogDivider"
+        android:id="@+id/divider"
+        android:layout_below="@id/title"/>
+    <EditText
+        android:id="@+id/gpio_temp_edit"
+        android:inputType="number"
+        android:hint="@string/temperature_gpio_hint"
+        style="@style/StandardEditText"
+        android:layout_below="@id/divider"/>
+    <EditText
+        android:id="@+id/gpio_moisture_edit"
+        android:inputType="number"
+        android:hint="@string/moisture_gpio_hint"
+        style="@style/StandardEditText"
+        android:layout_below="@id/gpio_temp_edit"/>
+    <EditText
+        android:id="@+id/gpio_light_edit"
+        android:inputType="number"
+        android:hint="@string/light_gpio_hint"
+        style="@style/StandardEditText"
+        android:layout_below="@id/gpio_moisture_edit"/>
+</RelativeLayout>

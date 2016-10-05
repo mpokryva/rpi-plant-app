@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+    <TextView
+        android:text="@string/add_plant"
+        style="@style/DialogHeader_HoloBlueLight"
+        android:id="@+id/activity_title"/>
+    <View
+        style="@style/DialogDivider"
+        android:layout_below="@id/activity_title"
+        android:id="@+id/divider"/>
+    <EditText
+        android:id="@+id/optimal_temp_edit"
+        android:inputType="number"
+        android:hint="@string/optimal_temp"
+        style="@style/StandardEditText"
+        android:layout_below="@id/divider"/>
+    <EditText
+        android:id="@+id/optimal_moisture_edit"
+        android:inputType="number"
+        android:hint="@string/optimal_moisture"
+        style="@style/StandardEditText"
+        android:layout_below="@id/optimal_temp_edit"/>
+    <EditText
+        android:id="@+id/optimal_light_edit"
+        android:inputType="number"
+        android:hint="@string/optimal_light"
+        style="@style/StandardEditText"
+        android:layout_below="@id/optimal_moisture_edit"/>
+    <Button
+        android:text="Cancel"
+        android:id="@+id/cancel_button"
+        android:layout_alignTop="@+id/next_button"
+        style="@style/BottomLeftButton"/>
+
+    <Button
+        android:text="Next"
+        android:id="@+id/next_button"
+        style="@style/BottomRightButton"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"/>
+
+    <Button
+        android:text="Finish later"
+        android:id="@+id/finish_later_button"
+        style="@style/BottomCenterButton"
+        android:layout_alignParentBottom="true"/>
+</RelativeLayout>

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.renderscript.Double2;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
@@ -52,9 +53,9 @@ public class OptimalStatsDialog extends DialogFragment {
         builder.setPositiveButton(R.string.add, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                int selectedOptimalTemp = Integer.parseInt(optimalTempEdit.getText().toString());
-                int selectedOptimalMoisture = Integer.parseInt(optimalMoistureEdit.getText().toString());
-                int selectedOptimalLight = Integer.parseInt(optimalLightEdit.getText().toString());
+                double selectedOptimalTemp = Double.parseDouble(optimalTempEdit.getText().toString());
+                double selectedOptimalMoisture = Double.parseDouble(optimalMoistureEdit.getText().toString());
+                double selectedOptimalLight = Double.parseDouble(optimalLightEdit.getText().toString());
 
                 mDBHandler = new DBHandler(getActivity(), null, null, 1);
                 // Deleting plant from database BEFORE changes.

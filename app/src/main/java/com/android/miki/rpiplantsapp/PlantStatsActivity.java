@@ -145,12 +145,17 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         super.onCreate(savedInstanceState);
         //this.deleteDatabase("userplants.db");
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+        mPlantNameToItemMap = new HashMap<>();
+        mPlantsMenuOrder = new ArrayList<>();
+        mPlantNameToPlantMap= new HashMap<>();
 
         setContentView(R.layout.activity_plant_stats);
         // Check if activity is starting from NoPlantsActivity data
+        /**
         if (getIntent().getExtras() != null){
             makePlantFromIntent(getIntent());
         }
+         **/
 
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
@@ -158,9 +163,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         Log.d(TAG, "testLog");
         initPubNub();
         Log.d(TAG, "initiated PubNub");
-        mPlantNameToItemMap = new HashMap<>();
-        mPlantsMenuOrder = new ArrayList<>();
-        mPlantNameToPlantMap= new HashMap<>();
+
 
         setTempUnit(fahrenheit);
 
@@ -225,7 +228,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         newPlant.setTempGPIO(6);
          **/
 
-        //createPlantMenuItem(newPlant, false, 0);
 
         for(int i=0; i<mPlants.size(); i++){
             createPlantMenuItem(mPlants.get(i), false, 0);

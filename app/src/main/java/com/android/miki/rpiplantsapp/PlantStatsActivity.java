@@ -48,23 +48,23 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 /**
-import android.app.Activity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import com.pubnub.api.Callback;
-import com.pubnub.api.PNConfiguration;
-import com.pubnub.api.PubNub;
-import com.pubnub.api.Pubnub;
-import com.pubnub.api.PubnubError;
+ import android.app.Activity;
+ import android.os.Bundle;
+ import android.util.Log;
+ import android.view.Menu;
+ import android.view.MenuItem;
+ import android.view.MotionEvent;
+ import android.view.View;
+ import android.widget.LinearLayout;
+ import android.widget.SeekBar;
+ import android.widget.TextView;
+ import com.pubnub.api.Callback;
+ import com.pubnub.api.PNConfiguration;
+ import com.pubnub.api.PubNub;
+ import com.pubnub.api.Pubnub;
+ import com.pubnub.api.PubnubError;
 
-**/
+ **/
 
 
 import com.fasterxml.jackson.core.sym.Name;
@@ -79,8 +79,6 @@ import com.pubnub.api.models.consumer.PNPublishResult;
 import com.pubnub.api.models.consumer.PNStatus;
 import com.pubnub.api.models.consumer.pubsub.PNMessageResult;
 import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
-
-
 
 
 import java.lang.reflect.Member;
@@ -104,7 +102,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     private PubNub mPubNub;
     private String[] mPlantTitles;
     private String publishKey = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
-    private String subscribeKey ="sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
+    private String subscribeKey = "sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
     private String channel = "py-light";
     private long lastUpdate = System.currentTimeMillis();
     private TabLayout tabLayout;
@@ -123,9 +121,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     private Plant selectedPlant;
     private HashMap<String, MenuItem> mPlantNameToItemMap;
     private HashMap<String, Plant> mPlantNameToPlantMap;
-    private String celsius = "°C";
-    private String fahrenheit = "°F";
-    private String tempUnit;
+    private TempUnit tempUnit;
     private boolean isFahrenheit;
     private MenuItem selectedPlantItem;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -147,14 +143,14 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
         mPlantNameToItemMap = new HashMap<>();
         mPlantsMenuOrder = new ArrayList<>();
-        mPlantNameToPlantMap= new HashMap<>();
+        mPlantNameToPlantMap = new HashMap<>();
 
         setContentView(R.layout.activity_plant_stats);
         // Check if activity is starting from NoPlantsActivity data
         /**
-        if (getIntent().getExtras() != null){
-            makePlantFromIntent(getIntent());
-        }
+         if (getIntent().getExtras() != null){
+         makePlantFromIntent(getIntent());
+         }
          **/
 
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
@@ -165,7 +161,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         Log.d(TAG, "initiated PubNub");
 
 
-        setTempUnit(fahrenheit);
+        setTempUnit(new TempUnit.Fahrenheit());
 
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Moisture"));
@@ -200,13 +196,12 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
             }
         });
 
-        NavigationView mDrawerList =(NavigationView) findViewById(R.id.main_navigation);
+        NavigationView mDrawerList = (NavigationView) findViewById(R.id.main_navigation);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, actionBar, R.string.drawer_open, R.string.drawer_close);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
-
 
 
         Menu navMenu = mDrawerList.getMenu();
@@ -219,22 +214,22 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
         // Delete the stuff below
         /**
-        Plant newPlant = new Plant("TestName", "TestSpecies");
-        newPlant.getLightFrag().getStat().setOptimalLevel(1);
-        newPlant.getMoistureFrag().getStat().setOptimalLevel(2);
-        newPlant.getTempFrag().getStat().setOptimalLevel(3);
-        newPlant.setLightGPIO(4);
-        newPlant.setMoistureGPIO(5);
-        newPlant.setTempGPIO(6);
+         Plant newPlant = new Plant("TestName", "TestSpecies");
+         newPlant.getLightFrag().getStat().setOptimalLevel(1);
+         newPlant.getMoistureFrag().getStat().setOptimalLevel(2);
+         newPlant.getTempFrag().getStat().setOptimalLevel(3);
+         newPlant.setLightGPIO(4);
+         newPlant.setMoistureGPIO(5);
+         newPlant.setTempGPIO(6);
          **/
 
 
-        for(int i=0; i<mPlants.size(); i++){
+        for (int i = 0; i < mPlants.size(); i++) {
             createPlantMenuItem(mPlants.get(i), false, 0);
         }
 
-        if (savedInstanceState != null){
-            if (savedInstanceState.getString(PLANT_NAME_KEY) != null){
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getString(PLANT_NAME_KEY) != null) {
                 String currentItemPlantName = savedInstanceState.getString(PLANT_NAME_KEY);
                 MenuItem lastSelectedItem = mPlantNameToItemMap.get(currentItemPlantName);
                 setSelectedPlantItem(lastSelectedItem);
@@ -246,15 +241,12 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         }
 
 
-
-
         final Button addPlantButton = (Button) findViewById(R.id.add_plant_button);
         addPlantButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(PlantStatsActivity.this, SetNameSpeciesActivity.class);
                 startActivityForResult(intent, ADD_PLANT_REQUEST);
-
 
 
             }
@@ -274,24 +266,24 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
     @Override
-    protected void onPostCreate(Bundle savedInstanceState){
+    protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         mDrawerToggle.syncState();
-        if (mDBHandler.isEmpty()){
+        if (mDBHandler.isEmpty()) {
             startNoPlantActivity();
         }
 
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig){
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
 
     @Override
-    protected void onSaveInstanceState(Bundle outState){
+    protected void onSaveInstanceState(Bundle outState) {
         if (selectedPlant != null) {
             outState.putString(PLANT_NAME_KEY, selectedPlant.getPlantName());
         }
@@ -301,6 +293,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
     /**
      * Handle the plant that is received.
+     *
      * @param dialogTag Tag of dialog
      * @param newPlant
      */
@@ -308,19 +301,19 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
     @Override
     public void onDialogPositiveClick(String dialogTag, int menuItemIndex, Plant newPlant) {
-        if (dialogTag == NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG){
+        if (dialogTag == NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG) {
             plantsMenu.removeItem(menuItemIndex);
             mPlantsMenuOrder.remove(menuItemIndex);
             createPlantMenuItem(newPlant, true, menuItemIndex);
             adapter.refreshCurrentFrags(false);
         }
-        if (dialogTag == OptimalStatsDialog.OPTIMAL_STATS_DIALOG_TAG){
+        if (dialogTag == OptimalStatsDialog.OPTIMAL_STATS_DIALOG_TAG) {
             plantsMenu.removeItem(menuItemIndex);
             mPlantsMenuOrder.remove(menuItemIndex);
             createPlantMenuItem(newPlant, true, menuItemIndex);
             adapter.refreshCurrentFrags(false);
         }
-        if (dialogTag == SetGPIODialog.SET_GPIO_DIALOG_TAG){
+        if (dialogTag == SetGPIODialog.SET_GPIO_DIALOG_TAG) {
             plantsMenu.removeItem(menuItemIndex);
             mPlantsMenuOrder.remove(menuItemIndex);
             createPlantMenuItem(newPlant, true, menuItemIndex);
@@ -328,14 +321,13 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         }
     }
 
-    private void createPlantMenuItem(final Plant plant, boolean specifyPosition, int position){
+    private void createPlantMenuItem(final Plant plant, boolean specifyPosition, int position) {
         final String plantName = plant.getPlantName();
         final MenuItem plantMenuItem;
         if (specifyPosition) {
             plantMenuItem = plantsMenu.add(Menu.NONE, position, position, plantName);
-        }
-        else {
-                plantMenuItem = plantsMenu.add(Menu.NONE, mPlantsMenuOrder.size(), mPlantsMenuOrder.size(), plantName);
+        } else {
+            plantMenuItem = plantsMenu.add(Menu.NONE, mPlantsMenuOrder.size(), mPlantsMenuOrder.size(), plantName);
         }
         ImageButton pottedPlantIcon = new ImageButton(this);
         pottedPlantIcon.setImageResource(R.drawable.potted_plant);
@@ -350,8 +342,8 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 alertDialog.setTitle("Change plant attributes");
                 final String choices[] = {"Name/species", "Optimal stats", "GPIO pins", "Delete plant"};
                 alertDialog.setItems(choices, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface d, int choice){
-                        switch (choice){
+                    public void onClick(DialogInterface d, int choice) {
+                        switch (choice) {
                             // Name/species
                             case 0:
                                 NameSpeciesDialog nameSpeciesDialog = NameSpeciesDialog.newInstance(plantMenuItem.getOrder());
@@ -403,17 +395,18 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
             }
         });
 
-            mDBHandler.addPlant(plant);
-            mPlantsMenuOrder.add(mPlantsMenuOrder.size(), plant);
-            mPlantNameToItemMap.put(plantName, plantMenuItem);
-            mPlantNameToPlantMap.put(plantName, plant);
+        mDBHandler.addPlant(plant);
+        mPlantsMenuOrder.add(mPlantsMenuOrder.size(), plant);
+        mPlantNameToItemMap.put(plantName, plantMenuItem);
+        mPlantNameToPlantMap.put(plantName, plant);
     }
 
     /**
      * Highlights selected plant MenuItem and un-highlights previous one.
+     *
      * @param item
      */
-    public void setSelectedPlantItem(MenuItem item){
+    public void setSelectedPlantItem(MenuItem item) {
         if (selectedPlantItem != null) {
             selectedPlantItem.setChecked(false);
         }
@@ -421,7 +414,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         selectedPlantItem.setChecked(true);
     }
 
-    private void loadPlantItemTabs(Plant plant){
+    private void loadPlantItemTabs(Plant plant) {
         selectedPlant = plant;
         double optimalMoisture = selectedPlant.getMoistureFrag().getStat().getOptimalLevel();
         double optimalLight = selectedPlant.getLightFrag().getStat().getOptimalLevel();
@@ -431,10 +424,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
 
-
-
-
-    private void startSettingsActivity(){
+    private void startSettingsActivity() {
         Intent intent = new Intent(this, SettingsActivity.class);
         intent.putExtra(SettingsActivity.TEMP_UNIT_INTENT_KEY, isFahrenheit);
         intent.putExtra(SettingsActivity.PUBLISH_INTENT_KEY, publishKey);
@@ -443,55 +433,32 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         startActivityForResult(intent, TEMP_CHANGE_REQUEST);
     }
 
-    private void startNoPlantActivity(){
+    private void startNoPlantActivity() {
         Intent intent = new Intent(this, NoPlantsActivity.class);
         startActivityForResult(intent, ADD_PLANT_REQUEST);
     }
 
 
-
-    public String getTempUnit(){
+    public TempUnit getTempUnit() {
         return tempUnit;
     }
 
-
-    /**
-     * Should probably delete this method
-     * @param newTempUnit
-     */
-    private void setTempUnit(String newTempUnit){
-        if (newTempUnit.equals(fahrenheit) || newTempUnit.equals(celsius)){
-            if (newTempUnit.equals(fahrenheit)){
-                isFahrenheit = true;
-            }
-            else {
-                isFahrenheit = false;
-            }
-            tempUnit = newTempUnit;
+    private void setTempUnit(TempUnit newTempUnit) {
+        tempUnit = newTempUnit;
+        if (tempUnit instanceof TempUnit.Fahrenheit){
+            isFahrenheit = true;
+        }
+        else {
+            isFahrenheit = false;
         }
     }
 
-    /**
-     * Set the temperature unit, and does conversions, if necessary.
-     * @param isFahrenheit if true, then unit is Fahrenheit.
-
-     */
-    private void setTempUnit(boolean isFahrenheit){
-       if (isFahrenheit){
-           tempUnit = fahrenheit;
-       }
-        else{
-           tempUnit = celsius;
-       }
-    }
-
-
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if (requestCode == TEMP_CHANGE_REQUEST){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == TEMP_CHANGE_REQUEST) {
             // Making sure request was successful
-            if (resultCode == RESULT_OK){
+            if (resultCode == RESULT_OK) {
                 Bundle receivedData = data.getExtras();
                 String publishKey = receivedData.getString(SettingsActivity.PUBLISH_INTENT_KEY);
                 String subscribeKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
@@ -500,16 +467,15 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 int refreshRate = receivedData.getInt(SettingsActivity.REFRESH_RATE_INTENT_KEY);
 
                 boolean convert;
-                if(isFahrenheit != isFahrenheitUpdated){
+                if (isFahrenheit != isFahrenheitUpdated) {
                     convert = true;
-                }
-                else {
+                } else {
                     convert = false;
                 }
 
                 // If at least one value has changed.
                 if (!(publishKey.equals(this.publishKey) && subscribeKey.equals(this.subscribeKey)
-                && channel.equals(this.channel))){
+                        && channel.equals(this.channel))) {
                     this.publishKey = publishKey;
                     this.subscribeKey = subscribeKey;
                     this.isFahrenheit = isFahrenheitUpdated;
@@ -519,27 +485,25 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                         messageToPi.put("subscribeKey", this.subscribeKey);
                         messageToPi.put("channel", this.channel);
                         messageToPi.put("refreshRate", refreshRate);
-                    }
-                    catch (JSONException e){
+                    } catch (JSONException e) {
                         Log.d(TAG, "Value in put() method is probably null");
                         e.printStackTrace();
                     }
                     Callback callback = new Callback() {
-                        public void successCallback(String channel, Object response){
+                        public void successCallback(String channel, Object response) {
                             System.out.println(response.toString());
                         }
 
-                        public void errorCallback(String channel, PubNubError error){
+                        public void errorCallback(String channel, PubNubError error) {
                             System.out.println(error.toString());
                         }
                     };
                     mPubNub.publish().channel(this.channel).message(messageToPi).async(new PNCallback<PNPublishResult>() {
                         @Override
                         public void onResponse(PNPublishResult result, PNStatus status) {
-                            if (!status.isError()){
+                            if (!status.isError()) {
                                 // Message published successfully.
-                            }
-                            else {
+                            } else {
                                 // Handle error.
                                 status.retry();
                             }
@@ -551,18 +515,17 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 adapter.refreshCurrentFrags(convert);
 
 
-
             }
         }
 
-        if (requestCode == ADD_PLANT_REQUEST){
-            if (resultCode == RESULT_OK){
+        if (requestCode == ADD_PLANT_REQUEST) {
+            if (resultCode == RESULT_OK) {
                 makePlantFromIntent(data);
             }
         }
     }
 
-    private void makePlantFromIntent(Intent data){
+    private void makePlantFromIntent(Intent data) {
         Bundle receivedData = data.getExtras();
         String plantName = receivedData.getString(Plant.PLANT_NAME_KEY);
         String plantSpecies = receivedData.getString(Plant.PLANT_SPECIES_KEY);
@@ -586,42 +549,41 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
     /**
      * Converts to Celsius.
+     *
      * @param value Value to convert.
      * @return The converted value
      */
-    private double convertToCelsius(double value){
-        double convertedValue = ((value-32)*5)/9;
-        double roundedvalue = Math.round(convertedValue*100.0)/100.0;
+    private double convertToCelsius(double value) {
+        double convertedValue = ((value - 32) * 5) / 9;
+        double roundedvalue = Math.round(convertedValue * 100.0) / 100.0;
 
         return roundedvalue;
     }
 
     /**
      * Converts to Fahrenheit.
+     *
      * @param value Value to convert.
      * @return The converted value.
      */
-    private double convertToFahrenheit(double value){
-        double convertedValue = ((9*value)/5)+32;
-        double roundedvalue = Math.round(convertedValue*100)/100;
+    private double convertToFahrenheit(double value) {
+        double convertedValue = ((9 * value) / 5) + 32;
+        double roundedvalue = Math.round(convertedValue * 100) / 100;
 
         return roundedvalue;
     }
 
 
-
-    private void sendValueToFragment(double value, String key){
+    private void sendValueToFragment(double value, String key) {
         if (key.equals(lightKey)) {
             Intent intent = new Intent(LightFragment.getIntentKeyWord());
             intent.putExtra(key, value);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        }
-        else if (key.equals(moistureKey)){
+        } else if (key.equals(moistureKey)) {
             Intent intent = new Intent(MoistureFragment.getIntentKeyWord());
             intent.putExtra(key, value);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        }
-        else if (key.equals(tempKey)){
+        } else if (key.equals(tempKey)) {
             Intent intent = new Intent(TemperatureFragment.getIntentKeyWord());
             intent.putExtra(key, value);
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
@@ -629,13 +591,9 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
 
-
-
-
-
-    private void initPubNub(){
+    private void initPubNub() {
         PNConfiguration pnConfiguration = new PNConfiguration();
-            pnConfiguration.setPublishKey(publishKey);
+        pnConfiguration.setPublishKey(publishKey);
         pnConfiguration.setSubscribeKey(subscribeKey);
         pnConfiguration.setUuid("AndroidPiLight");
         mPubNub = new PubNub(pnConfiguration);
@@ -646,13 +604,12 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         mPubNub.addListener(new SubscribeCallback() {
             @Override
             public void status(PubNub pubnub, PNStatus status) {
-                if (status.getCategory() == PNStatusCategory.PNUnexpectedDisconnectCategory){
+                if (status.getCategory() == PNStatusCategory.PNUnexpectedDisconnectCategory) {
                     connectedToPubNub = false;
-                }
-                else if (status.getCategory() == PNStatusCategory.PNConnectedCategory) {
+                } else if (status.getCategory() == PNStatusCategory.PNConnectedCategory) {
                     connectedToPubNub = true;
                 }
-                if (status.getCategory() == PNStatusCategory.PNReconnectedCategory){
+                if (status.getCategory() == PNStatusCategory.PNReconnectedCategory) {
                     connectedToPubNub = true;
                 }
             }
@@ -677,7 +634,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         });
     }
 
-    private void publishToPubNub(){
+    private void publishToPubNub() {
         PNConfiguration pnConfiguration = new PNConfiguration();
         pnConfiguration.setPublishKey(publishKey);
         pnConfiguration.setSubscribeKey(subscribeKey);
@@ -690,23 +647,18 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     /**
      * Makes a push notification. NOT CURRENTLY WORKING.
      */
-     public void pushNotification(String notificationText){
+    public void pushNotification(String notificationText) {
         NotificationManager notificationManager;
-        notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         //Notification notification = new Notification();
         PendingIntent pending = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0);
         Notification.Builder builder = new Notification.Builder(getApplicationContext());
-         builder.setContentText(notificationText);
-         builder.setSmallIcon(R.drawable.potted_plant);
-         Notification notification = builder.build();
-         notificationManager.notify(0, notification);
+        builder.setContentText(notificationText);
+        builder.setSmallIcon(R.drawable.potted_plant);
+        Notification notification = builder.build();
+        notificationManager.notify(0, notification);
 
     }
-
-
-
-
-
 
 
     @Override
@@ -753,30 +705,30 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         boolean notifyChangesNeverCalled = true;
         boolean getItemNeverCalled = true;
 
-        public ViewPageAdapter(FragmentManager fm, int numOfTabs){
+        public ViewPageAdapter(FragmentManager fm, int numOfTabs) {
             super(fm);
             mFragmentManager = fm;
             this.mNumOfTabs = numOfTabs;
         }
 
         @Override
-        public Fragment getItem(int position){
-            switch (position){
+        public Fragment getItem(int position) {
+            switch (position) {
                 case 0:
-                    if(currentMoistureFragment == null){
+                    if (currentMoistureFragment == null) {
                         MoistureFragment moistureTab = new MoistureFragment();
                         currentMoistureFragment = moistureTab;
                         return currentMoistureFragment;
 
                     }
                 case 1:
-                    if(currentLightFragment == null){
+                    if (currentLightFragment == null) {
                         LightFragment lightTab = new LightFragment();
                         currentLightFragment = lightTab;
                         return currentLightFragment;
                     }
                 case 2:
-                    if(currentTempFragment == null){
+                    if (currentTempFragment == null) {
                         TemperatureFragment tempTab = new TemperatureFragment();
                         currentTempFragment = tempTab;
                         getItemNeverCalled = false;
@@ -789,13 +741,14 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
         /**
          * Method added for dealing with orientation changes.
+         *
          * @param container
          * @param position
          * @return
          */
         @Override
-        public Object instantiateItem(ViewGroup container, int position){
-            switch (position){
+        public Object instantiateItem(ViewGroup container, int position) {
+            switch (position) {
                 case 0:
                     MoistureFragment moistureTab = (MoistureFragment) super.instantiateItem(container, position);
                     currentMoistureFragment = moistureTab;
@@ -816,65 +769,56 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         }
 
 
-
         @Override
-        public int getCount(){
+        public int getCount() {
             return mNumOfTabs;
         }
 
 
         /**
          * Updates only optimal stats of current fragments in viewPager. Called when adding new plant.
+         *
          * @param moistureValue
          * @param lightValue
          * @param tempValue
          */
-        public void updateCurrentFragsOptimal(double moistureValue, double lightValue, double tempValue){
+        public void updateCurrentFragsOptimal(double moistureValue, double lightValue, double tempValue) {
             currentMoistureFragment.setOptimalStatText(String.valueOf(moistureValue));
             currentLightFragment.setOptimalStatText(String.valueOf(lightValue));
             currentTempFragment.setOptimalStatText(String.valueOf(tempValue));
         }
 
         /**
-         *  Refreshes current fragments, and converts units if necessary.
-         * @param convert
+         * Refreshes current fragments, and converts units if necessary.
+         *
+         * @param convert If true, method converts unit. Otherwise, it does not.
          */
-        public void refreshCurrentFrags(boolean convert){
-            if (convert){
-                // Convert from C to F
-                if (isFahrenheit) {
-                    PlantStat moistureStat = currentMoistureFragment.getStat();
-                    PlantStat lightStat = currentLightFragment.getStat();
-                    PlantStat tempStat = currentTempFragment.getStat();
-                    moistureStat.setCurrentLevel(convertToFahrenheit(moistureStat.getCurrentLevel()));
-                    moistureStat.setOptimalLevel(convertToFahrenheit(moistureStat.getOptimalLevel()));
-                    currentLightFragment.getStat().setCurrentLevel(convertToFahrenheit(lightStat.getCurrentLevel()));
-                    currentLightFragment.getStat().setOptimalLevel(convertToFahrenheit(lightStat.getOptimalLevel()));
-                    currentTempFragment.getStat().setCurrentLevel(convertToFahrenheit(tempStat.getCurrentLevel()));
-                    currentTempFragment.getStat().setOptimalLevel(convertToFahrenheit(tempStat.getOptimalLevel()));
-                }
-                // Convert from F to C
-                if (!isFahrenheit) {
-                    PlantStat moistureStat = currentMoistureFragment.getStat();
-                    PlantStat lightStat = currentLightFragment.getStat();
-                    PlantStat tempStat = currentTempFragment.getStat();
-                    moistureStat.setCurrentLevel(convertToCelsius(moistureStat.getCurrentLevel()));
-                    moistureStat.setOptimalLevel(convertToCelsius(moistureStat.getOptimalLevel()));
-                    currentLightFragment.getStat().setCurrentLevel(convertToCelsius(lightStat.getCurrentLevel()));
-                    currentLightFragment.getStat().setOptimalLevel(convertToCelsius(lightStat.getOptimalLevel()));
-                    currentTempFragment.getStat().setCurrentLevel(convertToCelsius(tempStat.getCurrentLevel()));
-                    currentTempFragment.getStat().setOptimalLevel(convertToCelsius(tempStat.getOptimalLevel()));
-                }
+        public void refreshCurrentFrags(boolean convert) {
+            if (convert) {
+                convert();
             }
             currentMoistureFragment.refresh();
             currentLightFragment.refresh();
             currentTempFragment.refresh();
         }
 
+        /**
+         * Converts fragments from C to F or vice versa.
+         */
+        public void convert() {
+            PlantStat moistureStat = currentMoistureFragment.getStat();
+            PlantStat lightStat = currentLightFragment.getStat();
+            PlantStat tempStat = currentTempFragment.getStat();
+            moistureStat.setCurrentLevel(convertToFahrenheit(moistureStat.getCurrentLevel()));
+            moistureStat.setOptimalLevel(convertToFahrenheit(moistureStat.getOptimalLevel()));
+            lightStat.setCurrentLevel(convertToFahrenheit(lightStat.getCurrentLevel()));
+            lightStat.setOptimalLevel(convertToFahrenheit(lightStat.getOptimalLevel()));
+            tempStat.setCurrentLevel(convertToFahrenheit(tempStat.getCurrentLevel()));
+            tempStat.setOptimalLevel(convertToFahrenheit(tempStat.getOptimalLevel()));
+        }
 
 
     }
-
 
 
 }

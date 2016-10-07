@@ -38,12 +38,42 @@ public class MoistureFragment extends StatFragment implements RealTimeUpdate {
         return v;
     }
 
-    protected static MoistureFragment newInstance(String statKey, double stat){
-        MoistureFragment statFragment = new MoistureFragment();
-        Bundle args = new Bundle();
-        args.putDouble(statKey, stat);
-        statFragment.setArguments(args);
-        return statFragment;
+    /**
+     * Sets the current stat text (with moisture units), and updates the actual
+     * current level in mStat as well.
+     * @param newText The new text
+     */
+    @Override
+    public void setCurrentStatText(String newText) {
+        try{
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newCurrentText = newText + " " + activity.getMoistureUnit();
+            getCurrentStatTextView().setText(newCurrentText);
+            getStat().setCurrentLevel(Double.parseDouble(newText));
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "Invalid parameter. Level not changed.");
+        }
+
+    }
+
+    /**
+     * Sets the optimal stat text (with moisture units), and updates the actual
+     * current level in mStat as well.
+     * @param newText The new text
+     */
+    @Override
+    public void setOptimalStatText(String newText) {
+        try{
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newOptimalText = newText + " " + activity.getMoistureUnit();
+            getOptimalStatTextView().setText(newOptimalText);
+            getStat().setOptimalLevel(Double.parseDouble(newText));
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "Invalid parameter. Level not changed.");
+        }
+
     }
 
     public static String getIntentKeyWord(){

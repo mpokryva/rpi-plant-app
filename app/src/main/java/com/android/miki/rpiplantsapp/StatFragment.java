@@ -137,7 +137,7 @@ public abstract class StatFragment extends Fragment {
 
     /**
      * Updates the currentLevel of this fragment based on received Bundle.
-     * @param statKey
+     * @param statKey The constant key of this fragment.
      */
     public void update(String statKey){
         Bundle data = getArguments();
@@ -164,7 +164,7 @@ public abstract class StatFragment extends Fragment {
 
 
     /**
-     * Refreshes the current and optimal stats of this fragment. fragment
+     * Refreshes the current and optimal stats of this fragment.
      */
     public void refresh(){
         String currentStat = String.valueOf(getStat().getCurrentLevel());
@@ -184,6 +184,18 @@ public abstract class StatFragment extends Fragment {
     public TextView getActionRequiredText() {
         return actionRequiredText;
     }
+
+    /**
+     * Sets the current stat text (with units), and updates the actual current level in mStat as well.
+     * @param newText The new text
+     */
+    public abstract void setCurrentStatText(String newText);
+
+    /**
+     * Sets the optimal stat text (with units), and updates the actual current level in mStat as well.
+     * @param newText The new text
+     */
+    public abstract void setOptimalStatText(String newText);
 
     @Override
     public void onDestroy(){

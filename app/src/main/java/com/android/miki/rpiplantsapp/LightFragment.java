@@ -64,12 +64,13 @@ public class LightFragment extends StatFragment {
      * current level in mStat as well.
      * @param newText The new text
      */
+    @Override
     public void setCurrentStatText(String newText) {
         try{
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
-            String newCurrentText = newText + " " + activity.getTempUnit();
-            currentStatText.setText(newCurrentText);
-            mStat.setCurrentLevel(Double.parseDouble(newText));
+            String newCurrentText = newText + " " + activity.getLightUnit();
+            getCurrentStatTextView().setText(newCurrentText);
+            getStat().setCurrentLevel(Double.parseDouble(newText));
         }
         catch (IllegalArgumentException e){
             Log.d(TAG, "Invalid parameter. Level not changed.");
@@ -83,12 +84,12 @@ public class LightFragment extends StatFragment {
      * @param newText The new text
      */
     @Override
-    public void setOptimalStatText(String newText, String unit) {
+    public void setOptimalStatText(String newText) {
         try{
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
-            String newOptimalText = newText + " " + activity.getTempUnit();
+            String newOptimalText = newText + " " + activity.getLightUnit();
             getOptimalStatTextView().setText(newOptimalText);
-            mStat.setOptimalLevel(Double.parseDouble(newText));
+            getStat().setOptimalLevel(Double.parseDouble(newText));
         }
         catch (IllegalArgumentException e){
             Log.d(TAG, "Invalid parameter. Level not changed.");

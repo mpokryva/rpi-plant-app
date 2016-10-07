@@ -47,7 +47,7 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
         try{
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
             String newCurrentText = newText + " " + activity.getTempUnit();
-            getCurrentStatText().setText(newCurrentText);
+            getCurrentStatTextView().setText(newCurrentText);
             getStat().setCurrentLevel(Double.parseDouble(newText));
         }
         catch (IllegalArgumentException e){
@@ -64,7 +64,7 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
         try{
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
             String newOptimalText = newText + " " + activity.getTempUnit();
-            getOptimalStatText().setText(newOptimalText);
+            getOptimalStatTextView().setText(newOptimalText);
             getStat().setOptimalLevel(Double.parseDouble(newText));
         }
         catch (IllegalArgumentException e){

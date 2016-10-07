@@ -1,28 +1,18 @@
 package com.android.miki.rpiplantsapp;
 
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
-import android.os.Message;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.ViewPager;
@@ -37,18 +27,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.TableLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.fasterxml.jackson.core.sym.Name;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.pubnub.api.PNConfiguration;
 import com.pubnub.api.PubNub;
@@ -93,6 +78,8 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     private HashMap<String, MenuItem> mPlantNameToItemMap;
     private HashMap<String, Plant> mPlantNameToPlantMap;
     private TempUnit tempUnit;
+    private static final String MOISTURE_UNIT = "%";
+    private static final String LIGHT_UNIT = "lux";
     private boolean isFahrenheit;
     private MenuItem selectedPlantItem;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -249,13 +236,11 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
     /**
-     * Handle the plant that is received.
+     * Handle the plant that is received from dialog.
      *
      * @param dialogTag Tag of dialog
      * @param newPlant
      */
-
-
     @Override
     public void onDialogPositiveClick(String dialogTag, int menuItemIndex, Plant newPlant) {
         if (dialogTag == NameSpeciesDialog.NAME_SPECIES_DIALOG_TAG) {
@@ -396,10 +381,17 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
 
-    public TempUnit getTempUnit() {
-        return tempUnit;
+    public String getTempUnit() {
+        return tempUnit.getTempUnit();
     }
 
+    public String getLightUnit() {
+        return LIGHT_UNIT;
+    }
+
+    public String getMoistureUnit() {
+        return MOISTURE_UNIT;
+    }
     private void setTempUnit(TempUnit newTempUnit) {
         tempUnit = newTempUnit;
         if (tempUnit instanceof TempUnit.Fahrenheit) {
@@ -412,13 +404,13 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     /**
      * Convenience method for setting tempUnit.
      *
-     * @param isFahrenheit If true, tempUnit is Fahrenheit. If false, it is Celcius.
+     * @param isFahrenheit If true, tempUnit is Fahrenheit. If false, it is Celsius.
      */
     private void setTempUnit(boolean isFahrenheit) {
         if (isFahrenheit) {
             tempUnit = new TempUnit.Fahrenheit();
         } else {
-            tempUnit = new TempUnit.Celcius();
+            tempUnit = new TempUnit.Celsius();
         }
     }
 
@@ -441,13 +433,13 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 } else {
                     convert = false;
                 }
-
+                this.isFahrenheit = isFahrenheitUpdated;
                 // If at least one value has changed.
                 if (!(publishKey.equals(this.publishKey) && subscribeKey.equals(this.subscribeKey)
                         && channel.equals(this.channel))) {
                     this.publishKey = publishKey;
                     this.subscribeKey = subscribeKey;
-                    this.isFahrenheit = isFahrenheitUpdated;
+
                     JSONObject messageToPi = new JSONObject();
                     try {
                         messageToPi.put("publishKey", this.publishKey);
@@ -516,31 +508,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         createPlantMenuItem(plant, false, 0);
     }
 
-    /**
-     * Converts to Celsius.
-     *
-     * @param value Value to convert.
-     * @return The converted value
-     */
-    private double convertToCelsius(double value) {
-        double convertedValue = ((value - 32) * 5) / 9;
-        double roundedvalue = Math.round(convertedValue * 100.0) / 100.0;
-
-        return roundedvalue;
-    }
-
-    /**
-     * Converts to Fahrenheit.
-     *
-     * @param value Value to convert.
-     * @return The converted value.
-     */
-    private double convertToFahrenheit(double value) {
-        double convertedValue = ((9 * value) / 5) + 32;
-        double roundedvalue = Math.round(convertedValue * 100) / 100;
-
-        return roundedvalue;
-    }
 
 
     private void sendValueToFragment(double value, String key) {
@@ -760,10 +727,10 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         /**
          * Refreshes current fragments, and converts units if necessary.
          *
-         * @param convert If true, method converts unit. Otherwise, it does not.
+         * @param tempConvert If true, method converts temp unit. Otherwise, it does not.
          */
-        public void refreshCurrentFrags(boolean convert) {
-            if (convert) {
+        public void refreshCurrentFrags(boolean tempConvert) {
+            if (tempConvert) {
                 convert();
             }
             currentMoistureFragment.refresh();
@@ -775,15 +742,9 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
          * Converts fragments from C to F or vice versa.
          */
         public void convert() {
-            PlantStat moistureStat = currentMoistureFragment.getStat();
-            PlantStat lightStat = currentLightFragment.getStat();
             PlantStat tempStat = currentTempFragment.getStat();
-            moistureStat.setCurrentLevel(convertToFahrenheit(moistureStat.getCurrentLevel()));
-            moistureStat.setOptimalLevel(convertToFahrenheit(moistureStat.getOptimalLevel()));
-            lightStat.setCurrentLevel(convertToFahrenheit(lightStat.getCurrentLevel()));
-            lightStat.setOptimalLevel(convertToFahrenheit(lightStat.getOptimalLevel()));
-            tempStat.setCurrentLevel(convertToFahrenheit(tempStat.getCurrentLevel()));
-            tempStat.setOptimalLevel(convertToFahrenheit(tempStat.getOptimalLevel()));
+            tempStat.setCurrentLevel(tempUnit.convertUnit(tempStat.getCurrentLevel()));
+            tempStat.setOptimalLevel(tempUnit.convertUnit(tempStat.getOptimalLevel()));
         }
     }
 }

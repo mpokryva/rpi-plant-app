@@ -39,13 +39,38 @@ public class TemperatureFragment extends StatFragment implements RealTimeUpdate 
         return v;
     }
 
-    protected static TemperatureFragment newInstance(String statKey, double  stat){
-        TemperatureFragment statFragment = new TemperatureFragment();
-        Bundle args = new Bundle();
-        args.putDouble (statKey, stat);
-        statFragment.setArguments(args);
+    /**
+     * Sets the current stat text (with temp units), and updates the actual current level in mStat as well.
+     * @param newText The new text
+     */
+    public void setCurrentStatText(String newText) {
+        try{
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newCurrentText = newText + " " + activity.getTempUnit();
+            getCurrentStatText().setText(newCurrentText);
+            getStat().setCurrentLevel(Double.parseDouble(newText));
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "Invalid parameter. Level not changed.");
+        }
 
-        return statFragment;
+    }
+
+    /**
+     * Sets the optimal stat text (with temp units), and updates the actual current level in mStat as well.
+     * @param newText The new text
+     */
+    public void setOptimalStatText(String newText) {
+        try{
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newOptimalText = newText + " " + activity.getTempUnit();
+            getOptimalStatText().setText(newOptimalText);
+            getStat().setOptimalLevel(Double.parseDouble(newText));
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "Invalid parameter. Level not changed.");
+        }
+
     }
 
     public static String getIntentKeyWord(){

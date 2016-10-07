@@ -19,13 +19,12 @@ import android.widget.TextView;
 /**
  * Created by Miki on 8/3/2016.
  */
-public class StatFragment extends Fragment {
+public abstract class StatFragment extends Fragment {
     private TextView currentStatText;
     private TextView optimalStatText;
     private TextView actionRequiredText;
     private PlantStat mStat = new PlantStat();
-    private final String TAG = "StatFragment";
-    public static Handler sUpdateHandler;
+    private static final String TAG = "StatFragment";
     private BroadcastReceiver mReceiver;
 
     @Override
@@ -70,8 +69,9 @@ public class StatFragment extends Fragment {
     /**
      * Sets the current stat text, and updates the actual current level in mStat as well.
      * @param newText The new text
+     * @param unit The units of the current level.
      */
-    public void setCurrentStatText(String newText) {
+    public void setCurrentStatText(String newText, String unit) {
         try{
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
             String newCurrentText = newText + " " + activity.getTempUnit();
@@ -84,7 +84,12 @@ public class StatFragment extends Fragment {
 
     }
 
-    public void setOptimalStatText(String newText) {
+    /**
+     * Sets the optimal stat text, and updates the actual current level in mStat as well.
+     * @param newText The new text
+     * @param unit The unit of the optimal level.
+     */
+    public void setOptimalStatText(String newText, String unit) {
         try{
             PlantStatsActivity activity = (PlantStatsActivity) getActivity();
             String newOptimalText = newText + " " + activity.getTempUnit();
@@ -97,29 +102,56 @@ public class StatFragment extends Fragment {
 
     }
 
+    /**
+     * Sets the current level TextView object of this StatFragment to the specified Textivew.
+     * @param newTextView The new TextView of this object.
+     */
     public void setCurrentTextView(TextView newTextView){
         currentStatText = newTextView;
     }
-    
+
+    /**
+     * Sets the optimal level TextView object of this StatFragment to the specified Textivew.
+     * @param newTextView The new TextView of this object.
+     */
     public void setOptimalTextView(TextView newTextView){
         optimalStatText = newTextView;
     }
 
+    /**
+     * Sets the action required TextView object of this StatFragment to the specified Textivew.
+     * @param newTextView The new TextView of this object.
+     */
     public void setActionRequiredTextView(TextView newTextView){
         actionRequiredText = newTextView;
     }
 
+    /**
+     * Gets the plantStat object associated with this StatFragment.
+     * @return The PlantStat object associated with this StatFragment.
+     */
     public PlantStat getStat(){
         return mStat;
     }
 
 
+    /**
+     * Updates the currentLevel of this fragment based on received Bundle.
+     * @param statKey
+     */
     public void update(String statKey){
         Bundle data = getArguments();
         double  statLevel = data.getDouble(statKey);
         getStat().setCurrentLevel(statLevel);
     }
 
+    /**
+     * Initializes TextViews and their contents.
+     * @param v The view associated with this fragment.
+     * @param currentResId Res ID of the current level.
+     * @param optimalResId Res ID of the optimal level layout.
+     * @param actionReqResId Res ID of the action required layout.
+     */
     protected void initializeTexts(View v, int currentResId, int optimalResId, int actionReqResId){
         double currentStat = getStat().getCurrentLevel();
         double optimalStat = getStat().getOptimalLevel();
@@ -130,20 +162,27 @@ public class StatFragment extends Fragment {
         setOptimalStatText(String.valueOf(optimalStat));
     }
 
-    protected static StatFragment newInstance(String statKey, double  stat){
-        StatFragment statFragment = new StatFragment();
-        Bundle args = new Bundle();
-        args.putDouble(statKey, stat);
-        statFragment.setArguments(args);
 
-        return statFragment;
-    }
-
+    /**
+     * Refreshes the current and optimal stats of this fragment. fragment
+     */
     public void refresh(){
         String currentStat = String.valueOf(getStat().getCurrentLevel());
         String optimalStat = String.valueOf(getStat().getOptimalLevel());
         setCurrentStatText(currentStat);
         setOptimalStatText(optimalStat);
+    }
+
+    public TextView getOptimalStatTextView() {
+        return optimalStatText;
+    }
+
+    public TextView getCurrentStatTextView() {
+        return currentStatText;
+    }
+
+    public TextView getActionRequiredText() {
+        return actionRequiredText;
     }
 
     @Override
@@ -155,9 +194,9 @@ public class StatFragment extends Fragment {
 
     /**
      * Initializes the BroadcastReceiver. Basically a replacement for its constructor.
-     * @param intentKey
-     * @param fragmentKey
-     * @return
+     * @param intentKey The key associated with the intent the fragment receives data from.
+     * @param fragmentKey The constant key of this fragment.
+     * @return The set up BroadcastReceiver.
      */
     protected BroadcastReceiver initializeBroadcastReceiver(String intentKey, String fragmentKey){
         final String intentKeyFinal = intentKey;

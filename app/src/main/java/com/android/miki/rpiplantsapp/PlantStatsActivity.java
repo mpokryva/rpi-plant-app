@@ -47,25 +47,6 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-/**
- import android.app.Activity;
- import android.os.Bundle;
- import android.util.Log;
- import android.view.Menu;
- import android.view.MenuItem;
- import android.view.MotionEvent;
- import android.view.View;
- import android.widget.LinearLayout;
- import android.widget.SeekBar;
- import android.widget.TextView;
- import com.pubnub.api.Callback;
- import com.pubnub.api.PNConfiguration;
- import com.pubnub.api.PubNub;
- import com.pubnub.api.Pubnub;
- import com.pubnub.api.PubnubError;
-
- **/
-
 
 import com.fasterxml.jackson.core.sym.Name;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -81,30 +62,20 @@ import com.pubnub.api.models.consumer.pubsub.PNMessageResult;
 import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
 
 
-import java.lang.reflect.Member;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.logging.Handler;
 
 import javax.security.auth.callback.Callback;
-
-import retrofit2.http.DELETE;
 
 
 public class PlantStatsActivity extends AppCompatActivity implements DialogListener {
 
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
     private PubNub mPubNub;
-    private String[] mPlantTitles;
     private String publishKey = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
     private String subscribeKey = "sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
     private String channel = "py-light";
-    private long lastUpdate = System.currentTimeMillis();
     private TabLayout tabLayout;
     private String TAG = "PlantsStatsActivity";
     private ViewPager viewPager;
@@ -132,9 +103,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
     private static final String PLANT_NAME_KEY = "plantNameKey";
     boolean connectedToPubNub;
-    boolean firstTimeLaunching;
-    private static final String MY_PREFERENCES = "MyPreferences";
-    private static final String FIRST_TIME_LAUNCHING_PREF_KEY = "firstTimeLaunching";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,13 +114,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         mPlantNameToPlantMap = new HashMap<>();
 
         setContentView(R.layout.activity_plant_stats);
-        // Check if activity is starting from NoPlantsActivity data
-        /**
-         if (getIntent().getExtras() != null){
-         makePlantFromIntent(getIntent());
-         }
-         **/
-
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
         Log.d(TAG, "inflated layout");
@@ -170,13 +131,9 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
         viewPager = (ViewPager) findViewById(R.id.pager);
         adapter = new ViewPageAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
-
         viewPager.setOffscreenPageLimit(3);
-
         viewPager.setAdapter(adapter);
-
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
-
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 
             @Override
@@ -445,11 +402,23 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
     private void setTempUnit(TempUnit newTempUnit) {
         tempUnit = newTempUnit;
-        if (tempUnit instanceof TempUnit.Fahrenheit){
+        if (tempUnit instanceof TempUnit.Fahrenheit) {
             isFahrenheit = true;
-        }
-        else {
+        } else {
             isFahrenheit = false;
+        }
+    }
+
+    /**
+     * Convenience method for setting tempUnit.
+     *
+     * @param isFahrenheit If true, tempUnit is Fahrenheit. If false, it is Celcius.
+     */
+    private void setTempUnit(boolean isFahrenheit) {
+        if (isFahrenheit) {
+            tempUnit = new TempUnit.Fahrenheit();
+        } else {
+            tempUnit = new TempUnit.Celcius();
         }
     }
 
@@ -816,11 +785,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
             tempStat.setCurrentLevel(convertToFahrenheit(tempStat.getCurrentLevel()));
             tempStat.setOptimalLevel(convertToFahrenheit(tempStat.getOptimalLevel()));
         }
-
-
     }
-
-
 }
 
 

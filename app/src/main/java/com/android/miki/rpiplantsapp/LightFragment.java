@@ -59,17 +59,40 @@ public class LightFragment extends StatFragment {
         return v;
     }
 
+    /**
+     * Sets the current stat text (with light units), and updates the actual
+     * current level in mStat as well.
+     * @param newText The new text
+     */
+    public void setCurrentStatText(String newText) {
+        try{
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newCurrentText = newText + " " + activity.getTempUnit();
+            currentStatText.setText(newCurrentText);
+            mStat.setCurrentLevel(Double.parseDouble(newText));
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "Invalid parameter. Level not changed.");
+        }
 
-    protected static LightFragment newInstance(String statKey, double stat){
-        LightFragment statFragment = new LightFragment();
-        Bundle args = new Bundle();
-        args.putDouble(statKey, stat);
-        statFragment.setArguments(args);
-
-        return statFragment;
     }
 
+    /**
+     * Sets the optimal stat text (with light units), and updates the actual
+     * current level in mStat as well.
+     * @param newText The new text
+     */
+    @Override
+    public void setOptimalStatText(String newText, String unit) {
+        try{
+            PlantStatsActivity activity = (PlantStatsActivity) getActivity();
+            String newOptimalText = newText + " " + activity.getTempUnit();
+            getOptimalStatTextView().setText(newOptimalText);
+            mStat.setOptimalLevel(Double.parseDouble(newText));
+        }
+        catch (IllegalArgumentException e){
+            Log.d(TAG, "Invalid parameter. Level not changed.");
+        }
 
-
-
+    }
 }

@@ -35,6 +35,8 @@ class PubnubCustom:
         print(channel)
         print(refresh_rate)
 
+   
+
 
     def publish_callback(message):
         print(message)
@@ -71,18 +73,18 @@ class PubnubCustom:
                                     error=PubnubCustom._error)
         print ("Published!")
         
-    def make_settings_dict(pub_key, sub_key, channel, refresh_rate):
-        settings = {'pub_key':pub_file, 'sub_key' : sub_file, 'channel' : channel_file,
-            'refresh_rate':refresh_file}
-        return settings
-        
+ 
+def make_settings_dict(pub_key, sub_key, channel, refresh_rate):
+    settings = {'pub_key':pub_file, 'sub_key' : sub_file, 'channel' : channel_file,
+        'refresh_rate':refresh_file}
+    return settings          
 
 settings_file = open('PubNub Settings', 'r+')
 pub_file = settings_file.readline()
 sub_file = settings_file.readline()
 channel_file = settings_file.readline()
 refresh_file = settings_file.readline()
-settings = make_settings_dict(pub_file, sub_file, channel, refresh_file)
+settings = make_settings_dict(pub_file, sub_file, channel_file, refresh_file)
 pubnubCustom = PubnubCustom(settings)
 settings_file.close()
 

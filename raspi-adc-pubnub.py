@@ -15,10 +15,26 @@ DEBUG = 1  # set up PubNub subscription, channels, etc.
 
 
 class PubnubCustom:
-    def __init__(self, pub_key, sub_key, chan):
+    global pubnubCustom
+    global refresh_rate
+    
+    
+    def __init__(self, **kwargs):
+        pub_key = kwargs.get('pub_key')
+        sub_key = kwargs.get('sub_key')
+        channel = kwargs.get('channel')
+        refresh_rate = kwargs.get('refresh_rate')
+        
         self.pubnub = Pubnub(publish_key=pub_key,
                              subscribe_key=sub_key)  ##'pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a'##'sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f')
-        self.channel = chan  ## 'py-light'
+        self.channel = channel
+        set_refresh_rate(refresh_rate)
+        
+        print (pub_key)
+        print (sub_key)
+        print(channel)
+        print(refresh_rate)
+
 
     def publish_callback(message):
         print(message)
@@ -41,25 +57,42 @@ class PubnubCustom:
         new_subscribe_key = parsed_message['subscribeKey']
         new_channel = parsed_message['channel']
         new_refresh_rate = parsed_message['refreshRate']
-        new_pubnub = Pubnub(publish_key=new_publish_key,
-                            subscribe_key=new_subscribe_key)
         set_refresh_rate(new_refresh_rate)
         global pubnubCustom
-        pubnubCustom = PubnubCustom(new_publish_key, new_subscribe_key, new_channel)
+        new_settings = make_settings_dict(new_publish_key, new_subscribe_key, new_channel,
+                           new_refresh_rate)
+                           
+        pubnubCustom = PubnubCustom(new_settings)
+        print("Received new settings!")
 
     def publish(light_value):
-        pubnubCustom.pubnub.publish(pubnubCustom.channel, {'lightValue': light_value},
+        self.pubnub.publish(pubnubCustom.channel, {'lightValue': light_value},
                                     callback=PubnubCustom.publish_callback,
                                     error=PubnubCustom._error)
+        print ("Published!")
+        
+    def make_settings_dict(pub_key, sub_key, channel, refresh_rate):
+        settings = {'pub_key':pub_file, 'sub_key' : sub_file, 'channel' : channel_file,
+            'refresh_rate':refresh_file}
+        return settings
+        
 
-    pubnubCustom.pubnub.subscribe(channels=pubnubCustom.channel, callback=subscribe_callback,
-                                  error=_error,
-                                  connect=connect, reconnect=reconnect,
-                                  disconnect=disconnect)
+settings_file = open('PubNub Settings', 'r+')
+pub_file = settings_file.readline()
+sub_file = settings_file.readline()
+channel_file = settings_file.readline()
+refresh_file = settings_file.readline()
+settings = make_settings_dict(pub_file, sub_file, channel, refresh_file)
+pubnubCustom = PubnubCustom(settings)
+settings_file.close()
 
-    ##pubnubCustom.pubnub.publish(pubnubCustom.channel, {'lightValue': lightvalue},
-    ##                          callback=publish_callback,
-    ##                         error=_error)
+    #pubnubCustom.pubnub.subscribe(channels=pubnubCustom.channel, callback=subscribe_callback,
+     #                           connect=connect, reconnect=reconnect,
+       #                           disconnect=disconnect)
+
+    #pubnubCustom.pubnub.publish(pubnubCustom.channel, {'lightValue': lightvalue},
+    #                         callback=publish_callback,
+    #                        error=_error)
 
 
 
@@ -132,20 +165,21 @@ while True:
     # how much has it changed since the last read?
     pot_adjust = abs(trim_pot - last_read)
     # voltage, in Volts, of signal
-pot_voltage = trim_pot * (3.3 / 1023)
-light_value = pot_voltage
+    pot_voltage = trim_pot * (3.3 / 1023)
+    light_value = pot_voltage
 
-if DEBUG:
-    print "trim_pot:", trim_pot
-print "pot_voltage:", pot_voltage
-#                print "pot_adjust:", pot_adjust
-#                print "last_read", last_read
+    if DEBUG:
+        print "trim_pot:", trim_pot
+        
+    print "pot_voltage:", pot_voltage
+    #                print "pot_adjust:", pot_adjust
+    #                print "last_read", last_read
+    if pubnubCustom is not None:
+        pubnubCustom.publish(light_value)
 
-pubnubCustom.pubnub.publish(light_value)
 
-
-refresh_rate = 10
-# refreshes every refresh_rate secs
-time.sleep(refresh_rate)
+    refresh_rate = 5
+    # refreshes every refresh_rate secs
+    time.sleep(refresh_rate)
 
 

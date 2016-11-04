@@ -434,9 +434,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                     convert = false;
                 }
                 this.isFahrenheit = isFahrenheitUpdated;
-                // If at least one value has changed.
-                if (!(publishKey.equals(this.publishKey) && subscribeKey.equals(this.subscribeKey)
-                        && channel.equals(this.channel))) {
                     this.publishKey = publishKey;
                     this.subscribeKey = subscribeKey;
 
@@ -459,18 +456,29 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                             System.out.println(error.toString());
                         }
                     };
+                    final  int[] retryCount = {0};
                     mPubNub.publish().channel(this.channel).message(messageToPi).async(new PNCallback<PNPublishResult>() {
+
+                        public void RetryCount(){
+
+                        }
                         @Override
                         public void onResponse(PNPublishResult result, PNStatus status) {
+
+
                             if (!status.isError()) {
-                                // Message published successfully.
+                                System.out.println(status);
                             } else {
+
                                 // Handle error.
-                                status.retry();
+                                retryCount[0]++;
+                                if(retryCount[0] < 4){
+                                    status.retry();
+                                }
                             }
                         }
                     });
-                }
+                //}
                 this.channel = channel;
                 setTempUnit(isFahrenheit);
                 adapter.refreshCurrentFrags(convert);

@@ -29,34 +29,30 @@ class PubnubCustom:
         sub_key = kwargs.get('sub_key')
         channel = kwargs.get('channel')
         refresh_rate = kwargs.get('refresh_rate')
-        print (pub_key)
-        print (sub_key)
-        print(channel)
-        print(refresh_rate)
-        
         self.pubnub = Pubnub(publish_key=pub_key,
                              subscribe_key=sub_key)  ##'pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a'##'sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f')
         self.channel = channel
         set_refresh_rate(refresh_rate)
      
 
-   
-
-
-    def publish_callback(self, message):
-        print(message)
+    @staticmethod
+    def publish_callback(message):
+        print
 
     @staticmethod
     def _error(message):
         print("ERROR :" + str(message))
-
-    def reconnect(self, message):
+        
+    @staticmethod
+    def reconnect(message):
         print ("RECONNECTED")
 
-    def disconnect(self, message):
+    @staticmethod
+    def disconnect(message):
         print("DISCONNECTED")
 
-    def connect(self, message):
+    @staticmethod
+    def connect(message):
         print("CONNECTED")
 
     def subscribe_callback(self, message, channel):
@@ -68,8 +64,7 @@ class PubnubCustom:
         set_refresh_rate(new_refresh_rate)
         global pubnubCustom
         new_settings = make_settings_dict(new_publish_key, new_subscribe_key, new_channel,
-                           new_refresh_rate)
-                           
+                           new_refresh_rate)                 
         pubnubCustom = PubnubCustom(**new_settings)
         print("Received new settings!")
 
@@ -82,12 +77,19 @@ class PubnubCustom:
                                                    'tempValue' : temp_value},
                                     callback=PubnubCustom.publish_callback,
                                     error=PubnubCustom._error)
-        #print ("Published!")
+        print(pubnubCustom.pubnub.publish_key)
+        print(pubnubCustom.channel)
+        print(pubnubCustom.pubnub.subscribe_key)
+        print ("Published!")
         
  
 def make_settings_dict(pub_key, sub_key, channel, refresh_rate):
-    settings = {'pub_key':pub_file, 'sub_key' : sub_file, 'channel' : channel_file,
-        'refresh_rate':refresh_file}
+    pub_key = pub_key.strip('\n')
+    sub_key = sub_key.strip('\n')
+    channel = channel.strip('\n')
+    refresh_rate = refresh_rate.strip('\n')
+    settings = {'pub_key':pub_key, 'sub_key' : sub_key, 'channel' : channel,
+        'refresh_rate':refresh_rate}
     return settings          
 
 settings_file = open('PubNub Settings', 'r+')
@@ -177,7 +179,7 @@ while True:
     pot_adjust = abs(trim_pot - last_read)
     # voltage, in Volts, of signal
     pot_voltage = trim_pot * (3.3 / 1023)
-    light_value = pot_voltage
+    light_value = trim_pot
     moisture_value = 0
     temp_value  = 0
 
@@ -192,9 +194,6 @@ while True:
     #                print "pot_adjust:", pot_adjust
     #                print "last_read", last_read
     if pubnubCustom is not None:
-        print(pubnubCustom.pubnub.publish_key)
-        print(pubnubCustom.channel)
-        print(pubnubCustom.pubnub.subscribe_key)
         pubnubCustom.publish(**sensor_values)
 
 

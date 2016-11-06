@@ -53,7 +53,10 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:support-v4:23.1.1'
     compile 'com.android.support:design:23.1.1'
-    compile group: 'com.pubnub', name: 'pubnub', version: '4.0.6'
+    compile group: 'com.pubnub', name: 'pubnub', version: '4.2.0'
+    compile 'com.google.firebase:firebase-core:9.8.0'
+    compile 'com.google.firebase:firebase-database:9.8.0'
 }
 
+apply plugin: 'com.google.gms.google-services'
 

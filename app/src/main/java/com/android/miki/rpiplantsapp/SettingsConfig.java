@@ -7,26 +7,13 @@ package com.android.miki.rpiplantsapp;
 public class SettingsConfig {
 
     private Double refreshRate;
-    private Boolean isFahrenheit;
-    //private String tempUnit;
-   // private static Double REFRESH_RATE_DEFAULT = 1.0;
-    //private static String TEMP_UNIT_DEFAULT = "Fahrenheit";
-
+    private boolean isFahrenheit;
 
     public SettingsConfig(){
 
     }
 
-    /**
-    public SettingsConfig(Double refreshRate, String tempUnit){
-        if (TempUnit.contains(tempUnit)){
-            //this.tempUnit = tempUnit;
-        }
-        this.refreshRate = refreshRate;
-    }
-     **/
-
-    public SettingsConfig(Double refreshRate, Boolean isFahrenheit){
+    public SettingsConfig(Double refreshRate, boolean isFahrenheit){
         this.refreshRate = refreshRate;
         this.isFahrenheit = isFahrenheit;
     }
@@ -39,21 +26,12 @@ public class SettingsConfig {
         this.refreshRate = refreshRate;
     }
 
-    /**
-    public String getTempUnit() {
-        return tempUnit;
-    }
 
-    public void setTempUnit(String tempUnit) {
-        this.tempUnit = tempUnit;
-    }
-     **/
-
-    public Boolean isFahrenheit(){
+    public boolean getIsFahrenheit(){
         return isFahrenheit;
     }
 
-    public void setIsFahrenheit(Boolean isFahrenheit){
+    public void setIsFahrenheit(boolean isFahrenheit){
         this.isFahrenheit = isFahrenheit;
     }
 

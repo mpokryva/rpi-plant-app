@@ -74,6 +74,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     private static final String PLANT_NAME_KEY = "plantNameKey";
     private DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference mUserPlantsRef = mRootRef.child("userPlants");
+    private final double PERCENT_THRESHOLD = 0.05;
 
 
     @Override
@@ -144,9 +145,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 startSettingsActivity();
             }
         });
-
-        pushNotification("TEST");
-
+        addFirebaseListener();
     }
 
     private void addFirebaseListener(){
@@ -158,9 +157,49 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                PlantSummary updatedPlant = dataSnapshot.getValue(PlantSummary.class);
-                mDBHandler.getP
-                if (updatedPlant.getCurrentLight()
+                if (!dataSnapshot.exists()) {
+                    return;
+                }
+                String lightNotif = "";
+                String moistureNotif = "";
+                String tempNotif = "";
+                PlantSummary updatedPlantSummary = dataSnapshot.getValue(PlantSummary.class);
+                Plant updatedPlant = mDBHandler.getPlant(updatedPlantSummary.getPlantName());
+                double currentLight = updatedPlantSummary.getCurrentLight();
+                double currentMoisture = updatedPlantSummary.getCurrentMoisture();
+                double currentTemp = updatedPlantSummary.getCurrentTemp();
+
+                double optimalLight = updatedPlant.getOptimalLight();
+                double optimalMoisture = updatedPlant.getOptimalMoisture();
+                double optimalTemp = updatedPlant.getOptimalTemp();
+
+                if (currentLight*(1+PERCENT_THRESHOLD) > optimalLight){
+                    lightNotif = "Too much light for " + updatedPlant.getPlantName();
+                }
+                else if (currentLight*(1-PERCENT_THRESHOLD) < optimalLight){
+                    lightNotif = "Too little light for " + updatedPlant.getPlantName();
+                }
+
+                if (currentMoisture*(1+PERCENT_THRESHOLD) > optimalMoisture){
+                    moistureNotif = "Too much moisture for " + updatedPlant.getPlantName();
+                }
+                else if (currentMoisture*(1-PERCENT_THRESHOLD) < optimalMoisture){
+                    moistureNotif = "Too little moisture for " + updatedPlant.getPlantName();
+                }
+
+                if (currentTemp*(1+PERCENT_THRESHOLD) > optimalTemp){
+                    tempNotif = "It's too hot for " + updatedPlant.getPlantName();
+                }
+                else if (currentTemp*(1-PERCENT_THRESHOLD) < optimalTemp){
+                    tempNotif = "It's too cold for " + updatedPlant.getPlantName();
+                }
+
+                if (!lightNotif.equals(""))
+                    pushNotification(lightNotif);
+                if (!moistureNotif.equals(""))
+                    pushNotification(moistureNotif);
+                if (!tempNotif.equals(""))
+                    pushNotification(tempNotif);
             }
 
             @Override
@@ -312,6 +351,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                                 mPlantNameToItemMap.remove(plantName);
                                 mPlantNameToPlantMap.remove(plantName);
                                 mDBHandler.deletePlant(plantName);
+                                mUserPlantsRef.child(plantName).removeValue();
                                 break;
 
                             default:
@@ -450,6 +490,10 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         }
     }
 
+    private void addPlantToFirebase(PlantSummary plantSummary){
+        mUserPlantsRef.child(plantSummary.getPlantName()).setValue(plantSummary);
+    }
+
     private void makePlantFromIntent(Intent data) {
         Bundle receivedData = data.getExtras();
         String plantName = receivedData.getString(Plant.PLANT_NAME_KEY);
@@ -469,6 +513,8 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         plant.setMoistureGPIO(moistureGPIO);
         plant.setTempGPIO(tempGPIO);
 
+        PlantSummary plantSummary = new PlantSummary(plantName);
+        addPlantToFirebase(plantSummary);
         createPlantMenuItem(plant, false, 0);
     }
 

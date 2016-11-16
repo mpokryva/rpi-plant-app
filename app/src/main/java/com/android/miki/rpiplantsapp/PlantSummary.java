@@ -15,6 +15,17 @@ public class PlantSummary {
 
     }
 
+    public PlantSummary(String plantName, double currentLight, double currentMoisture, double currentTemp) {
+        this.plantName = plantName;
+        this.currentLight = currentLight;
+        this.currentMoisture = currentMoisture;
+        this.currentTemp = currentTemp;
+    }
+
+    public PlantSummary(String plantName) {
+        this.plantName = plantName;
+    }
+
     public double getCurrentLight() {
         return currentLight;
     }

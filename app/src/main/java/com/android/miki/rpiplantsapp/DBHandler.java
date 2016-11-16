@@ -19,10 +19,10 @@ public class DBHandler extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "userplants.db";
     public static final String TABLE_PLANTS = "plants";
-    public static final String  COLUMN_ID = "id";
+    public static final String COLUMN_ID = "id";
     public static final String COLUMN_PLANT_NAME = "plant_name";
     public static final String COLUMN_PLANT_SPECIES = "plant_species";
-    public static final String COLUMN_CURRENT_LIGHT = "current_light" ;
+    public static final String COLUMN_CURRENT_LIGHT = "current_light";
     public static final String COLUMN_CURRENT_MOISTURE = "current_moisture";
     public static final String COLUMN_CURRENT_TEMP = "current_temp";
     public static final String COLUMN_OPTIMAL_LIGHT = "optimal_light";
@@ -43,7 +43,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
     /**
      * Put this column into a different table. Along with channel, and pub & sub keys.
-    public static final String COLUMN_TEMP_UNIT = "temp_unit";
+     * public static final String COLUMN_TEMP_UNIT = "temp_unit";
      **/
     public static final String[] COLUMNS = {COLUMN_PLANT_NAME, COLUMN_PLANT_SPECIES, COLUMN_CURRENT_LIGHT, COLUMN_CURRENT_MOISTURE,
             COLUMN_CURRENT_TEMP, COLUMN_OPTIMAL_LIGHT, COLUMN_OPTIMAL_MOISTURE, COLUMN_OPTIMAL_TEMP};
@@ -67,12 +67,12 @@ public class DBHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String query = "CREATE TABLE " + TABLE_PLANTS + "(" +
-                COLUMN_PLANT_NAME  + " TEXT PRIMARY KEY, " +
-                COLUMN_PLANT_SPECIES   + " TEXT, " +
-                COLUMN_CURRENT_LIGHT  + " REAL, " +
-                COLUMN_CURRENT_MOISTURE  + " REAL, " +
-                COLUMN_CURRENT_TEMP  + " REAL, " +
-                COLUMN_OPTIMAL_LIGHT  + " REAL, " +
+                COLUMN_PLANT_NAME + " TEXT PRIMARY KEY, " +
+                COLUMN_PLANT_SPECIES + " TEXT, " +
+                COLUMN_CURRENT_LIGHT + " REAL, " +
+                COLUMN_CURRENT_MOISTURE + " REAL, " +
+                COLUMN_CURRENT_TEMP + " REAL, " +
+                COLUMN_OPTIMAL_LIGHT + " REAL, " +
                 COLUMN_OPTIMAL_MOISTURE + " REAL, " +
                 COLUMN_OPTIMAL_TEMP + " REAL, " +
                 COLUMN_GPIO_LIGHT + " REAL, " +
@@ -89,7 +89,7 @@ public class DBHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void setGPIO(double lightGPIO, double moistureGPIO, double tempGPIO){
+    public void setGPIO(double lightGPIO, double moistureGPIO, double tempGPIO) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_GPIO_MOISTURE, moistureGPIO);
         values.put(COLUMN_GPIO_LIGHT, lightGPIO);
@@ -101,7 +101,7 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     // Add a new row to the database
-    public void addPlant(Plant plant){
+    public void addPlant(Plant plant) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_PLANT_NAME, plant.getPlantName());
         values.put(COLUMN_PLANT_SPECIES, plant.getPlantSpecies());
@@ -123,7 +123,7 @@ public class DBHandler extends SQLiteOpenHelper {
     }
 
     // Delete a plant from the database
-    public void deletePlant(String plantName){
+    public void deletePlant(String plantName) {
         SQLiteDatabase db = getWritableDatabase();
         //db.execSQL("DELETE FROM " + TABLE_PLANTS +" WHERE " + COLUMN_PLANT_NAME + "=\""
         //+ plantName + "\";");
@@ -133,18 +133,22 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
-    public Plant getPlant(String plantName){
+    public Plant getPlant(String plantName) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = null;
-        Plant resultPlant = null;
-        c = db.rawQuery("SELECT * FROM " + TABLE_PLANTS + "WHERE " + COLUMN_PLANT_NAME + "=?", new String[]{plantName});
-        if (c.getCount() > 0){
+        Plant plant = null;
+        c = db.rawQuery("SELECT * FROM " + TABLE_PLANTS + " WHERE " + COLUMN_PLANT_NAME + "=?", new String[]{plantName});
+        if (c.getCount() > 0) {
             c.moveToFirst();
             String plantSpecies = c.getString(c.getColumnIndex(COLUMN_PLANT_SPECIES));
-            Plant plant = new Plant(plantName, plantSpecies);
+            plant = new Plant(plantName, plantSpecies);
             double lightGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_LIGHT));
             double moistureGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_MOISTURE));
             double tempGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_TEMP));
+            plant.setLightGPIO(lightGPIO);
+            plant.setMoistureGPIO(moistureGPIO);
+            plant.setTempGPIO(tempGPIO);
+
             PlantStat lightStat = plant.getLightFrag().getStat();
             double optimalLight = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_LIGHT));
             lightStat.setOptimalLevel(optimalLight);
@@ -157,11 +161,12 @@ public class DBHandler extends SQLiteOpenHelper {
             double optimalTemp = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_TEMP));
             moistureStat.setOptimalLevel(optimalTemp);
         }
-        return resultPlant;
+        c.close();
+        return plant;
     }
 
     // Print out the database as a String
-    public String databaseToString(){
+    public String databaseToString() {
         String dbString = "";
         SQLiteDatabase db = getWritableDatabase();
         String query = "SELECT * FROM " + TABLE_PLANTS + " WHERE 1";
@@ -175,8 +180,8 @@ public class DBHandler extends SQLiteOpenHelper {
         /**
          * This method runs infinitely. Fix it.
          */
-        while(!c.isAfterLast()){
-            if (c.getString(c.getColumnIndex(COLUMN_PLANT_NAME)) != null){
+        while (!c.isAfterLast()) {
+            if (c.getString(c.getColumnIndex(COLUMN_PLANT_NAME)) != null) {
                 dbString += c.getString(c.getColumnIndex("plant_name"));
                 /**
                  * Add toString of other columns
@@ -185,32 +190,35 @@ public class DBHandler extends SQLiteOpenHelper {
             }
         }
         db.close();
+        c.close();
         return dbString;
     }
 
-    public boolean isEmpty(){
+    public boolean isEmpty() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.query(TABLE_PLANTS, COLUMNS_ALL_BUT_CURRENT, null, null, null, null, null, null);
-        return (c.getCount() == 0);
+        int count = c.getCount();
+        c.close();
+        return (count == 0);
     }
 
-    public ArrayList<String> getPlantNames(){
+    public ArrayList<String> getPlantNames() {
         ArrayList<String> plantNames = new ArrayList<>();
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_PLANTS,new String[]{COLUMN_PLANT_NAME},null, null, null, null, null, null);
+        Cursor cursor = db.query(TABLE_PLANTS, new String[]{COLUMN_PLANT_NAME}, null, null, null, null, null, null);
         cursor.moveToFirst();
-        int i =0;
-        while(!cursor.isAfterLast()){
+        int i = 0;
+        while (!cursor.isAfterLast()) {
             plantNames.add(cursor.getString(cursor.getColumnIndex(COLUMN_PLANT_NAME)));
             cursor.moveToNext();
         }
         cursor.close();
         db.close();
-        return  plantNames;
+        return plantNames;
 
     }
 
-    public void deleteItem(){
+    public void deleteItem() {
 
     }
 
@@ -218,18 +226,19 @@ public class DBHandler extends SQLiteOpenHelper {
      * Retrieves a plant by its name from the db,
      * and constructs a Plant object for it, including its
      * LMT levels.
+     *
      * @param
      * @return The Plant object that is constructed.
      */
-    public ArrayList<Plant> makePlants(){
+    public ArrayList<Plant> makePlants() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor c = db.query(TABLE_PLANTS, COLUMNS_ALL_BUT_CURRENT, null, null, null, null, null, null);
         c.moveToFirst();
         ArrayList<Plant> plantsList = new ArrayList<>();
 
-        if(c.getCount() > 0){
+        if (c.getCount() > 0) {
             c.moveToFirst();
-            while (!c.isAfterLast()){
+            while (!c.isAfterLast()) {
                 String plantName = c.getString(c.getColumnIndex(COLUMN_PLANT_NAME));
                 String plantSpecies = c.getString(c.getColumnIndex(COLUMN_PLANT_SPECIES));
                 Plant plant = new Plant(plantName, plantSpecies);
@@ -241,21 +250,15 @@ public class DBHandler extends SQLiteOpenHelper {
                 plant.setTempGPIO(tempGPIO);
 
                 PlantStat lightStat = plant.getLightFrag().getStat();
-                //double currentLight = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_LIGHT));
                 double optimalLight = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_LIGHT));
-                //lightStat.setCurrentLevel(currentLight);
                 lightStat.setOptimalLevel(optimalLight);
 
                 PlantStat moistureStat = plant.getMoistureFrag().getStat();
-               // double currentMoisture = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_MOISTURE));
                 double optimalMoisture = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_MOISTURE));
-                //moistureStat.setCurrentLevel(currentMoisture);
                 moistureStat.setOptimalLevel(optimalMoisture);
 
                 PlantStat tempStat = plant.getTempFrag().getStat();
-               // double currentTemp = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_TEMP));
                 double optimalTemp = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_TEMP));
-                // tempStat.setCurrentLevel(currentTemp);
                 moistureStat.setOptimalLevel(optimalTemp);
 
                 plantsList.add(plant);
@@ -267,15 +270,6 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
         return plantsList;
     }
-
-
-
-    /**
-    public PlantStat makePlantStat(double currentLevel, double optimalLevel){
-        PlantStat stat = new PlantStat(currentLevel, optimalLevel, ""); // Last parameter should not really be ""
-    }
-     **/
-
 
 
 }

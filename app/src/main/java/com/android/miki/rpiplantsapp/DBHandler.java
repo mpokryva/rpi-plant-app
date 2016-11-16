@@ -236,6 +236,9 @@ public class DBHandler extends SQLiteOpenHelper {
                 double lightGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_LIGHT));
                 double moistureGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_MOISTURE));
                 double tempGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_TEMP));
+                plant.setLightGPIO(lightGPIO);
+                plant.setMoistureGPIO(moistureGPIO);
+                plant.setTempGPIO(tempGPIO);
 
                 PlantStat lightStat = plant.getLightFrag().getStat();
                 //double currentLight = c.getDouble(c.getColumnIndex(COLUMN_CURRENT_LIGHT));

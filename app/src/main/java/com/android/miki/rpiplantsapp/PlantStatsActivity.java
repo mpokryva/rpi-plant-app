@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.provider.ContactsContract;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -23,7 +22,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,28 +30,21 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
-import org.json.*;
+import com.google.firebase.database.ValueEventListener;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-
-import javax.security.auth.callback.Callback;
 
 
 public class PlantStatsActivity extends AppCompatActivity implements DialogListener {
 
     private DrawerLayout mDrawerLayout;
-    private String publishKey = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
-    private String subscribeKey = "sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
     private String channel = "py-light";
     private TabLayout tabLayout;
     private String TAG = "PlantsStatsActivity";
@@ -65,9 +56,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     public static String lightKey = "lightValue";
     public static String moistureKey = "moistureValue";
     public static String tempKey = "tempValue";
-    private double lightMessage;
-    private double moistureMessage;
-    private double tempMessage;
+
     private Plant selectedPlant;
     private HashMap<String, MenuItem> mPlantNameToItemMap;
     private HashMap<String, Plant> mPlantNameToPlantMap;
@@ -84,7 +73,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
     private static final String PLANT_NAME_KEY = "plantNameKey";
     private DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReference();
-    private DatabaseReference mSettingsRef = mRootRef.child("settings");
+    private DatabaseReference mUserPlantsRef = mRootRef.child("userPlants");
 
 
     @Override
@@ -100,10 +89,99 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
 
-
+        initTabLayout();
 
         setTempUnit(new TempUnit.Fahrenheit());
 
+
+        NavigationView mDrawerList = (NavigationView) findViewById(R.id.main_navigation);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, actionBar, R.string.drawer_open, R.string.drawer_close);
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+
+        Menu navMenu = mDrawerList.getMenu();
+        plantsMenu = navMenu.addSubMenu("Plants");
+        //this.deleteDatabase("userplants.db");
+        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
+        SQLiteDatabase db = mDBHandler.getWritableDatabase(); ///////////*************delete
+        //db.delete("plants", null, null); //////////////*******delete
+        mPlants = mDBHandler.makePlants();
+
+        for (int i = 0; i < mPlants.size(); i++) {
+            createPlantMenuItem(mPlants.get(i), false, 0);
+        }
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getString(PLANT_NAME_KEY) != null) {
+                String currentItemPlantName = savedInstanceState.getString(PLANT_NAME_KEY);
+                MenuItem lastSelectedItem = mPlantNameToItemMap.get(currentItemPlantName);
+                setSelectedPlantItem(lastSelectedItem);
+                android.support.v7.app.ActionBar actionbar = getSupportActionBar();
+                actionbar.setTitle(currentItemPlantName);
+                selectedPlant = mPlantNameToPlantMap.get(currentItemPlantName);
+                //loadPlantItemTabs(mPlantNameToPlantMap.get(currentItemPlantName));
+            }
+        }
+
+        final Button addPlantButton = (Button) findViewById(R.id.add_plant_button);
+        addPlantButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(PlantStatsActivity.this, SetNameSpeciesActivity.class);
+                startActivityForResult(intent, ADD_PLANT_REQUEST);
+
+
+            }
+        });
+
+        final Button settingsButton = (Button) findViewById(R.id.settings_button);
+        settingsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startSettingsActivity();
+            }
+        });
+
+        pushNotification("TEST");
+
+    }
+
+    private void addFirebaseListener(){
+        mUserPlantsRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                PlantSummary updatedPlant = dataSnapshot.getValue(PlantSummary.class);
+                mDBHandler.getP
+                if (updatedPlant.getCurrentLight()
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
+    private void initTabLayout() {
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.addTab(tabLayout.newTab().setText("Moisture"));
         tabLayout.addTab(tabLayout.newTab().setText("Light"));
@@ -132,76 +210,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
             }
         });
-
-        NavigationView mDrawerList = (NavigationView) findViewById(R.id.main_navigation);
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, actionBar, R.string.drawer_open, R.string.drawer_close);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);
-
-
-        Menu navMenu = mDrawerList.getMenu();
-        plantsMenu = navMenu.addSubMenu("Plants");
-        //this.deleteDatabase("userplants.db");
-        mDBHandler = new DBHandler(PlantStatsActivity.this, null, null, 1);
-        SQLiteDatabase db = mDBHandler.getWritableDatabase(); ///////////*************delete
-        //db.delete("plants", null, null); //////////////*******delete
-        mPlants = mDBHandler.makePlants();
-
-        // Delete the stuff below
-        /**
-         Plant newPlant = new Plant("TestName", "TestSpecies");
-         newPlant.getLightFrag().getStat().setOptimalLevel(1);
-         newPlant.getMoistureFrag().getStat().setOptimalLevel(2);
-         newPlant.getTempFrag().getStat().setOptimalLevel(3);
-         newPlant.setLightGPIO(4);
-         newPlant.setMoistureGPIO(5);
-         newPlant.setTempGPIO(6);
-         **/
-
-
-        for (int i = 0; i < mPlants.size(); i++) {
-            createPlantMenuItem(mPlants.get(i), false, 0);
-        }
-
-        if (savedInstanceState != null) {
-            if (savedInstanceState.getString(PLANT_NAME_KEY) != null) {
-                String currentItemPlantName = savedInstanceState.getString(PLANT_NAME_KEY);
-                MenuItem lastSelectedItem = mPlantNameToItemMap.get(currentItemPlantName);
-                setSelectedPlantItem(lastSelectedItem);
-                android.support.v7.app.ActionBar actionbar = getSupportActionBar();
-                actionbar.setTitle(currentItemPlantName);
-                selectedPlant = mPlantNameToPlantMap.get(currentItemPlantName);
-                //loadPlantItemTabs(mPlantNameToPlantMap.get(currentItemPlantName));
-            }
-        }
-
-
-        final Button addPlantButton = (Button) findViewById(R.id.add_plant_button);
-        addPlantButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(PlantStatsActivity.this, SetNameSpeciesActivity.class);
-                startActivityForResult(intent, ADD_PLANT_REQUEST);
-
-
-            }
-        });
-
-        final Button settingsButton = (Button) findViewById(R.id.settings_button);
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startSettingsActivity();
-            }
-        });
-
-        pushNotification("TEST");
-
-
     }
-
 
 
     @Override
@@ -211,7 +220,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         if (mDBHandler.isEmpty()) {
             startNoPlantActivity();
         }
-
     }
 
     @Override
@@ -373,8 +381,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
 
-
-
     public String getTempUnit() {
         return tempUnit.getTempUnit();
     }
@@ -386,6 +392,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     public String getMoistureUnit() {
         return MOISTURE_UNIT;
     }
+
     private void setTempUnit(TempUnit newTempUnit) {
         tempUnit = newTempUnit;
         if (tempUnit instanceof TempUnit.Fahrenheit) {
@@ -425,21 +432,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                     convert = false;
                 }
                 this.isFahrenheit = isFahrenheitUpdated;
-                    this.publishKey = publishKey;
-                    this.subscribeKey = subscribeKey;
-
-                    JSONObject messageToPi = new JSONObject();
-                    try {
-                        messageToPi.put("publishKey", this.publishKey);
-                        messageToPi.put("subscribeKey", this.subscribeKey);
-                        messageToPi.put("channel", this.channel);
-                        messageToPi.put("refreshRate", refreshRate);
-                    } catch (JSONException e) {
-                        Log.d(TAG, "Value in put() method is probably null");
-                        e.printStackTrace();
-                    }
-
-
 
 
                 //}
@@ -481,7 +473,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
 
-
     private void sendValueToFragment(double value, String key) {
         if (key.equals(lightKey)) {
             Intent intent = new Intent(LightFragment.getIntentKeyWord());
@@ -497,9 +488,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
             LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         }
     }
-
-
-
 
 
     /**

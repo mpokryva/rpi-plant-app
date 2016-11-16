@@ -31,7 +31,6 @@ public abstract class StatFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        //initializeBroadcastSystem(null, null);
     }
 
     @Override
@@ -133,6 +132,7 @@ public abstract class StatFragment extends Fragment {
     public PlantStat getStat(){
         return mStat;
     }
+
 
 
     /**

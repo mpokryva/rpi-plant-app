@@ -51,6 +51,31 @@ public class Plant {
     }
     **/
 
+
+    public double getCurrentLight(){
+        return this.getLightFrag().getStat().getCurrentLevel();
+    }
+
+    public double getCurrentMoisture(){
+        return this.getMoistureFrag().getStat().getCurrentLevel();
+    }
+
+    public double getCurrentTemp(){
+        return this.getTempFrag().getStat().getCurrentLevel();
+    }
+
+    public double getOptimalLight(){
+        return this.getLightFrag().getStat().getOptimalLevel();
+    }
+
+    public double getOptimalMoisture(){
+        return this.getMoistureFrag().getStat().getOptimalLevel();
+    }
+
+    public double getOptimalTemp(){
+        return this.getTempFrag().getStat().getOptimalLevel();
+    }
+
     public LightFragment getLightFrag() {
         return light;
     }

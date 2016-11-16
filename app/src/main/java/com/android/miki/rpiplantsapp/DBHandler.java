@@ -133,6 +133,33 @@ public class DBHandler extends SQLiteOpenHelper {
         db.close();
     }
 
+    public Plant getPlant(String plantName){
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = null;
+        Plant resultPlant = null;
+        c = db.rawQuery("SELECT * FROM " + TABLE_PLANTS + "WHERE " + COLUMN_PLANT_NAME + "=?", new String[]{plantName});
+        if (c.getCount() > 0){
+            c.moveToFirst();
+            String plantSpecies = c.getString(c.getColumnIndex(COLUMN_PLANT_SPECIES));
+            Plant plant = new Plant(plantName, plantSpecies);
+            double lightGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_LIGHT));
+            double moistureGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_MOISTURE));
+            double tempGPIO = c.getDouble(c.getColumnIndex(COLUMN_GPIO_TEMP));
+            PlantStat lightStat = plant.getLightFrag().getStat();
+            double optimalLight = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_LIGHT));
+            lightStat.setOptimalLevel(optimalLight);
+
+            PlantStat moistureStat = plant.getMoistureFrag().getStat();
+            double optimalMoisture = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_MOISTURE));
+            moistureStat.setOptimalLevel(optimalMoisture);
+
+            PlantStat tempStat = plant.getTempFrag().getStat();
+            double optimalTemp = c.getDouble(c.getColumnIndex(COLUMN_OPTIMAL_TEMP));
+            moistureStat.setOptimalLevel(optimalTemp);
+        }
+        return resultPlant;
+    }
+
     // Print out the database as a String
     public String databaseToString(){
         String dbString = "";

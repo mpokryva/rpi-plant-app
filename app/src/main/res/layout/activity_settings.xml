@@ -11,55 +11,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.android.miki.rpiplantsapp.SettingsActivity">
 
-    <TextView
-        android:id="@+id/primary_sub_key"
-        style="@style/SettingsActivityPrimary"
-        android:text="@string/pubnub_subscribe_key"
-
-    />
-    <TextView
-        style="@style/SettingsActivitySecondary"
-        android:id="@+id/secondary_sub_key"
-        android:layout_below="@id/primary_sub_key"
-      />
-    <View
-        style="@style/Divider"
-        android:layout_below="@id/secondary_sub_key"
-       />
-
-    <TextView
-        style="@style/SettingsActivityPrimary"
-        android:id="@+id/primary_pub_key"
-        android:text="@string/pubnub_publish_key"
-        android:layout_below="@id/secondary_sub_key"
-       />
-    <TextView
-        style="@style/SettingsActivitySecondary"
-        android:id="@+id/secondary_pub_key"
-        android:layout_below="@id/primary_pub_key"
-      />
-    <View
-        style="@style/Divider"
-        android:layout_below="@id/secondary_pub_key"
-        />
-
-    <TextView
-        style="@style/SettingsActivityPrimary"
-        android:id="@+id/primary_pubnub_channel"
-        android:text="@string/channel"
-        android:layout_below="@id/secondary_pub_key"
-        />
-    <TextView
-        style="@style/SettingsActivitySecondary"
-        android:id="@+id/secondary_pubnub_channel"
-        android:layout_below="@id/primary_pubnub_channel"
-        />
-    <View
-        style="@style/Divider"
-        android:layout_below="@id/secondary_pubnub_channel"
-        />
-
-
 
     <Switch
         android:layout_width="match_parent"
@@ -74,7 +25,6 @@
         android:textOff="Celsius"
         android:textOn="Fahrenheit"
         android:layout_marginTop="50sp"
-        android:layout_below="@id/secondary_pubnub_channel"
         />
 
 

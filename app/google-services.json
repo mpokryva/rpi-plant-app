@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "635974836551",
+    "firebase_url": "https://rpiplantsapp.firebaseio.com",
+    "project_id": "rpiplantsapp",
+    "storage_bucket": "rpiplantsapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635974836551:android:a76125c370ddda09",
+        "android_client_info": {
+          "package_name": "com.android.miki.rpiplantsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "635974836551-4ue2marm3mkl1gqj765vcgs66gj4nkc9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.android.miki.rpiplantsapp",
+            "certificate_hash": "29827C1D1FDD0B90A676E0C1B5BFE200B5633CDD"
+          }
+        },
+        {
+          "client_id": "635974836551-s1k0o0lfhnglij856v8pvmboe5q54nbb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5ljHT5mOlmEo4B3gsNnuHc7bYHGyGnEc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "635974836551-s1k0o0lfhnglij856v8pvmboe5q54nbb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

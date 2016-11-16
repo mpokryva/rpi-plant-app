@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.provider.ContactsContract;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -35,16 +36,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.pubnub.api.PNConfiguration;
-import com.pubnub.api.PubNub;
-import com.pubnub.api.PubNubError;
-import com.pubnub.api.callbacks.PNCallback;
-import com.pubnub.api.callbacks.SubscribeCallback;
-import com.pubnub.api.enums.PNStatusCategory;
-import com.pubnub.api.models.consumer.PNPublishResult;
-import com.pubnub.api.models.consumer.PNStatus;
-import com.pubnub.api.models.consumer.pubsub.PNMessageResult;
-import com.pubnub.api.models.consumer.pubsub.PNPresenceEventResult;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import org.json.*;
 
 
 import java.util.ArrayList;
@@ -57,7 +52,6 @@ import javax.security.auth.callback.Callback;
 public class PlantStatsActivity extends AppCompatActivity implements DialogListener {
 
     private DrawerLayout mDrawerLayout;
-    private PubNub mPubNub;
     private String publishKey = "pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a";
     private String subscribeKey = "sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f";
     private String channel = "py-light";
@@ -89,7 +83,9 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     static String SETTINGS_INTENT_KEY = "settingIntentKey";
     public static final String PLANTS_MENU_INDEX_KEY = "plantMenuIndex";
     private static final String PLANT_NAME_KEY = "plantNameKey";
-    boolean connectedToPubNub;
+    private DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReference();
+    private DatabaseReference mSettingsRef = mRootRef.child("settings");
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,10 +99,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         setContentView(R.layout.activity_plant_stats);
         Toolbar actionBar = (Toolbar) findViewById(R.id.action_bar);
         setSupportActionBar(actionBar);
-        Log.d(TAG, "inflated layout");
-        Log.d(TAG, "testLog");
-        initPubNub();
-        Log.d(TAG, "initiated PubNub");
+
 
 
         setTempUnit(new TempUnit.Fahrenheit());
@@ -208,6 +201,8 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
 
 
     }
+
+
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -369,9 +364,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     private void startSettingsActivity() {
         Intent intent = new Intent(this, SettingsActivity.class);
         intent.putExtra(SettingsActivity.TEMP_UNIT_INTENT_KEY, isFahrenheit);
-        intent.putExtra(SettingsActivity.PUBLISH_INTENT_KEY, publishKey);
-        intent.putExtra(SettingsActivity.SUBSCRIBE_INTENT_KEY, subscribeKey);
-        intent.putExtra(SettingsActivity.CHANNEL_INTENT_KEY, channel);
         startActivityForResult(intent, TEMP_CHANGE_REQUEST);
     }
 
@@ -379,6 +371,8 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         Intent intent = new Intent(this, NoPlantsActivity.class);
         startActivityForResult(intent, ADD_PLANT_REQUEST);
     }
+
+
 
 
     public String getTempUnit() {
@@ -421,9 +415,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
             // Making sure request was successful
             if (resultCode == RESULT_OK) {
                 Bundle receivedData = data.getExtras();
-                String publishKey = receivedData.getString(SettingsActivity.PUBLISH_INTENT_KEY);
-                String subscribeKey = receivedData.getString(SettingsActivity.SUBSCRIBE_INTENT_KEY);
-                String channel = receivedData.getString(SettingsActivity.CHANNEL_INTENT_KEY);
                 boolean isFahrenheitUpdated = receivedData.getBoolean(SettingsActivity.TEMP_UNIT_INTENT_KEY);
                 int refreshRate = receivedData.getInt(SettingsActivity.REFRESH_RATE_INTENT_KEY);
 
@@ -434,9 +425,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                     convert = false;
                 }
                 this.isFahrenheit = isFahrenheitUpdated;
-                // If at least one value has changed.
-                if (!(publishKey.equals(this.publishKey) && subscribeKey.equals(this.subscribeKey)
-                        && channel.equals(this.channel))) {
                     this.publishKey = publishKey;
                     this.subscribeKey = subscribeKey;
 
@@ -450,27 +438,11 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                         Log.d(TAG, "Value in put() method is probably null");
                         e.printStackTrace();
                     }
-                    Callback callback = new Callback() {
-                        public void successCallback(String channel, Object response) {
-                            System.out.println(response.toString());
-                        }
 
-                        public void errorCallback(String channel, PubNubError error) {
-                            System.out.println(error.toString());
-                        }
-                    };
-                    mPubNub.publish().channel(this.channel).message(messageToPi).async(new PNCallback<PNPublishResult>() {
-                        @Override
-                        public void onResponse(PNPublishResult result, PNStatus status) {
-                            if (!status.isError()) {
-                                // Message published successfully.
-                            } else {
-                                // Handle error.
-                                status.retry();
-                            }
-                        }
-                    });
-                }
+
+
+
+                //}
                 this.channel = channel;
                 setTempUnit(isFahrenheit);
                 adapter.refreshCurrentFrags(convert);
@@ -527,58 +499,8 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     }
 
 
-    private void initPubNub() {
-        PNConfiguration pnConfiguration = new PNConfiguration();
-        pnConfiguration.setPublishKey(publishKey);
-        pnConfiguration.setSubscribeKey(subscribeKey);
-        pnConfiguration.setUuid("AndroidPiLight");
-        mPubNub = new PubNub(pnConfiguration);
-        mPubNub.subscribe().channels(Arrays.asList(channel)).execute();
-        Log.d(TAG, "subscribed");
 
 
-        mPubNub.addListener(new SubscribeCallback() {
-            @Override
-            public void status(PubNub pubnub, PNStatus status) {
-                if (status.getCategory() == PNStatusCategory.PNUnexpectedDisconnectCategory) {
-                    connectedToPubNub = false;
-                } else if (status.getCategory() == PNStatusCategory.PNConnectedCategory) {
-                    connectedToPubNub = true;
-                }
-                if (status.getCategory() == PNStatusCategory.PNReconnectedCategory) {
-                    connectedToPubNub = true;
-                }
-            }
-
-            @Override
-            public void message(PubNub pubnub, PNMessageResult message) {
-                JsonNode lightNode = message.getMessage().findValue(lightKey); // "lightValue" is JSON key.
-                lightMessage = lightNode.asDouble();
-                Log.d(TAG, "Got message as double");
-                sendValueToFragment(lightMessage, lightKey);
-                //sendValueToFragment(moistureMessage, moistureKey);
-                //sendValueToFragment(tempMessage, tempKey);
-                //
-
-
-            }
-
-            @Override
-            public void presence(PubNub pubnub, PNPresenceEventResult presence) {
-                // handle incoming presence data
-            }
-        });
-    }
-
-    private void publishToPubNub() {
-        PNConfiguration pnConfiguration = new PNConfiguration();
-        pnConfiguration.setPublishKey(publishKey);
-        pnConfiguration.setSubscribeKey(subscribeKey);
-        pnConfiguration.setUuid("AndroidPiLight");
-        mPubNub = new PubNub(pnConfiguration);
-        mPubNub.subscribe().channels(Arrays.asList(channel)).execute();
-        Log.d(TAG, "subscribed");
-    }
 
     /**
      * Makes a push notification. NOT CURRENTLY WORKING.

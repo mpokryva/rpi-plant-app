@@ -10,13 +10,22 @@ import json
 import RPi.GPIO as GPIO
 from firebase import firebase
 import requests
+import Queue
+import threading
 
 GPIO.setmode(GPIO.BCM)
 DEBUG = 1  # set up PubNub subscription, channels, etc.
 firebase_path = 'https://rpiplantsapp.firebaseio.com'
-firebase = firebase.FirebaseApplication(firebase_path,
+firebase_root = firebase.FirebaseApplication(firebase_path,
                                         None)
-result = firebase.get('/settings', 'refreshRate')
+
+firebase_modified_plants = firebase.FirebaseApplication(firebase_path +
+                                                        '/modifiedPlants',
+                                                        None)
+
+
+        
+result = firebase_root.get('/settings', 'refreshRate')
 print result
 
 
@@ -82,35 +91,62 @@ potentiometer_adc = 0;
 last_read = 0  # this keeps track of the last potentiometer value
 tolerance = 5  # to keep from being jittery we'll only change
 # volume when the pot has moved more than 5 'counts'
+def start_sensors(self):
+    GPIO.setwarnings(False)
+    while True:
+        # we'll assume that the pot didn't move
+        trim_pot_changed = False
 
-while True:
-    # we'll assume that the pot didn't move
-    trim_pot_changed = False
+        # read the analog pin
+        trim_pot = readadc(potentiometer_adc, SPICLK, SPIMOSI, SPIMISO, SPICS)
+        # how much has it changed since the last read?
+        pot_adjust = abs(trim_pot - last_read)
+        # voltage, in Volts, of signal
+        pot_voltage = trim_pot * (3.3 / 1023)
+        light_value = trim_pot
+        moisture_value = 0
+        temp_value  = 0
 
-    # read the analog pin
-    trim_pot = readadc(potentiometer_adc, SPICLK, SPIMOSI, SPIMISO, SPICS)
-    # how much has it changed since the last read?
-    pot_adjust = abs(trim_pot - last_read)
-    # voltage, in Volts, of signal
-    pot_voltage = trim_pot * (3.3 / 1023)
-    light_value = trim_pot
-    moisture_value = 0
-    temp_value  = 0
+        sensor_values = {'light_value' : light_value,
+                         'moisture_value' : moisture_value,
+                         'temp_value' : temp_value}
+        firebase_root.put(firebase_path, '/sensorResults', sensor_values)
 
-    sensor_values = {'light_value' : light_value,
-                     'moisture_value' : moisture_value,
-                     'temp_value' : temp_value}
-    firebase.put(firebase_path, '/sensorResults', sensor_values)
+        if DEBUG:
+            print "trim_pot:", trim_pot
+            
+        print "pot_voltage:", pot_voltage
+        #                print "pot_adjust:", pot_adjust
+        #                print "last_read", last_read
+        # refreshes every refresh_rate secs
+        refresh_rate = firebase_root.get('/settings', 'refreshRate')
+        condition.wait(refresh_rate)
 
-    if DEBUG:
-        print "trim_pot:", trim_pot
-        
-    print "pot_voltage:", pot_voltage
-    #                print "pot_adjust:", pot_adjust
-    #                print "last_read", last_read
-   
-    # refreshes every refresh_rate secs
-    refresh_rate = firebase.get('/settings', 'refreshRate')
-    time.sleep(refresh_rate)
+class FuncThread(threading.Thread):
+    def __init__(self, target, *args):
+        self.target = target
+        self._args = args
+        threading.Thread.__init__(self)
+    
+    def run(self):
+        self._target(*self._args)
+
+def check_for_plants(self):
+    while True:
+        print("Checking for plants")
+        modded_plants = firebase_root.get('/modifiedPlants', '')
+        print(modded_plants)
+        for plant, properties in modded_plants.items():
+            print properties['status']
+            if properties['status'] == 'modified':
+                condition.notify()
+                print("Notified")
+
+condition = threading.Condition()
+t_sensors = threading.Thread(target=start_sensors, args=(condition,))
+t_checker = threading.Thread(target=check_for_plants, args=(condition,))
+condition.acquire()
+t_sensors.start()
+t_checker.start()
 
 

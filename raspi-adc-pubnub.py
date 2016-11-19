@@ -14,58 +14,104 @@ GPIO.setmode(GPIO.BCM)
 DEBUG = 1  # set up PubNub subscription, channels, etc.
 
 
+def set_refresh_rate(new_refresh_rate):
+    global refresh_rate
+    refresh_rate = new_refresh_rate
+
 class PubnubCustom:
-    def __init__(self, pub_key, sub_key, chan):
+    global pubnubCustom
+    global refresh_rate
+    
+    
+    def __init__(self, **kwargs):
+        print("init")
+        pub_key = kwargs.get('pub_key')
+        sub_key = kwargs.get('sub_key')
+        channel = kwargs.get('channel')
+        refresh_rate = kwargs.get('refresh_rate')
         self.pubnub = Pubnub(publish_key=pub_key,
                              subscribe_key=sub_key)  ##'pub-c-442f45b2-dfc6-4df6-97ae-fc0e9efd909a'##'sub-c-6e0344ae-3bd7-11e6-85a4-0619f8945a4f')
-        self.channel = chan  ## 'py-light'
+        self.channel = channel
+        set_refresh_rate(refresh_rate)
+     
 
+    @staticmethod
     def publish_callback(message):
-        print(message)
+        print
 
+    @staticmethod
     def _error(message):
         print("ERROR :" + str(message))
-
+        
+    @staticmethod
     def reconnect(message):
         print ("RECONNECTED")
 
+    @staticmethod
     def disconnect(message):
         print("DISCONNECTED")
 
+    @staticmethod
     def connect(message):
         print("CONNECTED")
 
-    def subscribe_callback(message, channel):
+    def subscribe_callback(self, message, channel):
         parsed_message = json.load(message)
         new_publish_key = parsed_message['publishKey']
         new_subscribe_key = parsed_message['subscribeKey']
         new_channel = parsed_message['channel']
         new_refresh_rate = parsed_message['refreshRate']
-        new_pubnub = Pubnub(publish_key=new_publish_key,
-                            subscribe_key=new_subscribe_key)
         set_refresh_rate(new_refresh_rate)
         global pubnubCustom
-        pubnubCustom = PubnubCustom(new_publish_key, new_subscribe_key, new_channel)
+        new_settings = make_settings_dict(new_publish_key, new_subscribe_key, new_channel,
+                           new_refresh_rate)                 
+        pubnubCustom = PubnubCustom(**new_settings)
+        print("Received new settings!")
 
-    def publish(light_value):
-        pubnubCustom.pubnub.publish(pubnubCustom.channel, {'lightValue': light_value},
+    def publish(self, **kwargs):
+        light_value = kwargs.get('light_value')
+        moisture_value = kwargs.get('moisture_value')
+        temp_value = kwargs.get('temp_value')
+        self.pubnub.publish(pubnubCustom.channel, {'lightValue': light_value,
+                                                   'moistureValue' : moisture_value,
+                                                   'tempValue' : temp_value},
                                     callback=PubnubCustom.publish_callback,
                                     error=PubnubCustom._error)
+        print(pubnubCustom.pubnub.publish_key)
+        print(pubnubCustom.channel)
+        print(pubnubCustom.pubnub.subscribe_key)
+        print ("Published!")
+        
+ 
+def make_settings_dict(pub_key, sub_key, channel, refresh_rate):
+    pub_key = pub_key.strip('\n')
+    sub_key = sub_key.strip('\n')
+    channel = channel.strip('\n')
+    refresh_rate = refresh_rate.strip('\n')
+    settings = {'pub_key':pub_key, 'sub_key' : sub_key, 'channel' : channel,
+        'refresh_rate':refresh_rate}
+    return settings          
 
-    pubnubCustom.pubnub.subscribe(channels=pubnubCustom.channel, callback=subscribe_callback,
-                                  error=_error,
-                                  connect=connect, reconnect=reconnect,
-                                  disconnect=disconnect)
+settings_file = open('PubNub Settings', 'r+')
+pub_file = settings_file.readline()
+sub_file = settings_file.readline()
+channel_file = settings_file.readline()
+refresh_file = settings_file.readline()
+settings = make_settings_dict(pub_file, sub_file, channel_file, refresh_file)
+global pubnubCustom
+pubnubCustom = PubnubCustom(**settings)
+settings_file.close()
 
-    ##pubnubCustom.pubnub.publish(pubnubCustom.channel, {'lightValue': lightvalue},
-    ##                          callback=publish_callback,
-    ##                         error=_error)
+    #pubnubCustom.pubnub.subscribe(channels=pubnubCustom.channel, callback=subscribe_callback,
+     #                           connect=connect, reconnect=reconnect,
+       #                           disconnect=disconnect)
+
+    #pubnubCustom.pubnub.publish(pubnubCustom.channel, {'lightValue': lightvalue},
+    #                         callback=publish_callback,
+    #                        error=_error)
 
 
 
-def set_refresh_rate(new_refresh_rate):
-    global refresh_rate
-    refresh_rate = new_refresh_rate
 
 # read SPI data from MCP3008 chip, 8 possible adc's (0 thru 7)
 def readadc(adcnum, clockpin, mosipin, misopin, cspin):
@@ -132,20 +178,27 @@ while True:
     # how much has it changed since the last read?
     pot_adjust = abs(trim_pot - last_read)
     # voltage, in Volts, of signal
-pot_voltage = trim_pot * (3.3 / 1023)
-light_value = pot_voltage
+    pot_voltage = trim_pot * (3.3 / 1023)
+    light_value = trim_pot
+    moisture_value = 0
+    temp_value  = 0
 
-if DEBUG:
-    print "trim_pot:", trim_pot
-print "pot_voltage:", pot_voltage
-#                print "pot_adjust:", pot_adjust
-#                print "last_read", last_read
+    sensor_values = {'light_value' : light_value,
+                     'moisture_value' : moisture_value,
+                     'temp_value' : temp_value}
 
-pubnubCustom.pubnub.publish(light_value)
+    if DEBUG:
+        print "trim_pot:", trim_pot
+        
+    print "pot_voltage:", pot_voltage
+    #                print "pot_adjust:", pot_adjust
+    #                print "last_read", last_read
+    if pubnubCustom is not None:
+        pubnubCustom.publish(**sensor_values)
 
 
-refresh_rate = 10
-# refreshes every refresh_rate secs
-time.sleep(refresh_rate)
+    refresh_rate = 5
+    # refreshes every refresh_rate secs
+    time.sleep(refresh_rate)
 
 

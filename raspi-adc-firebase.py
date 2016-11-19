@@ -12,6 +12,7 @@ from firebase import firebase
 import requests
 import Queue
 import threading
+from waiting import wait, TimeoutExpired 
 
 GPIO.setmode(GPIO.BCM)
 DEBUG = 1  # set up PubNub subscription, channels, etc.
@@ -91,7 +92,7 @@ potentiometer_adc = 0;
 last_read = 0  # this keeps track of the last potentiometer value
 tolerance = 5  # to keep from being jittery we'll only change
 # volume when the pot has moved more than 5 'counts'
-def start_sensors(self):
+def start_sensors():
     GPIO.setwarnings(False)
     while True:
         # we'll assume that the pot didn't move
@@ -120,17 +121,46 @@ def start_sensors(self):
         #                print "last_read", last_read
         # refreshes every refresh_rate secs
         refresh_rate = firebase_root.get('/settings', 'refreshRate')
-        condition.wait(refresh_rate)
+        print("Starting check_for_plants()")
+        check_for_plants(refresh_rate)
+        '''
+        global refresh_paredicate
+        refresh_predicate = lambda str : str == 'modified'
+        try:
+            wait(refresh_predicate, timeout_seconds=refresh_rate)
+        except TimeoutExpired:
+            # user plants have not been modified
+            pass
+        '''
 
-class FuncThread(threading.Thread):
-    def __init__(self, target, *args):
-        self.target = target
-        self._args = args
-        threading.Thread.__init__(self)
-    
-    def run(self):
-        self._target(*self._args)
+def check_for_plants(refresh_rate):
+    print ("Checking for plants")
+    seconds_slept = 0
+    while (seconds_slept < refresh_rate):
+        modded_plants = firebase_root.get('/modifiedPlants', '')
+        print(modded_plants)
+        if modded_plants is not None:
+            for plant, properties in modded_plants.items():
+                print properties['status']
+                plants_updated = []
+                plants_deleted = []
+                if properties['status'] == 'updated':
+                    plants_updated.append(plant)   
+                elif properties['status'] == 'deleted':
+                    plants_deleted.append(plant)
+                firebase_root.delete('/modifiedPlants', '/' + plant)
+            if (len(plants_updated)==0 and len(plants_deleted)==0):
+                seconds_slept += 2
+                time.sleep(2)
+            else:
+                for plant in plants_deleted:
+                    firebase_root.delete('/userPlants', '/' + plant)
+                start_sensors()
+        else:
+            seconds_slept += 2
+            time.sleep(2)
 
+'''
 def check_for_plants(self):
     while True:
         print("Checking for plants")
@@ -148,5 +178,5 @@ t_checker = threading.Thread(target=check_for_plants, args=(condition,))
 condition.acquire()
 t_sensors.start()
 t_checker.start()
-
-
+'''
+start_sensors()

@@ -74,6 +74,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     private static final String PLANT_NAME_KEY = "plantNameKey";
     private DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference mUserPlantsRef = mRootRef.child("userPlants");
+    private DatabaseReference mModifiedPlantsRef = mRootRef.child("modifiedPlants");
     private final double PERCENT_THRESHOLD = 0.05;
 
 
@@ -494,6 +495,10 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         mUserPlantsRef.child(plantSummary.getPlantName()).setValue(plantSummary);
     }
 
+    private void addModifiedPlantToFirebase(PlantSummary plantSummary){
+        mModifiedPlantsRef.child(plantSummary.getPlantName()).setValue(plantSummary);
+    }
+
     private void makePlantFromIntent(Intent data) {
         Bundle receivedData = data.getExtras();
         String plantName = receivedData.getString(Plant.PLANT_NAME_KEY);
@@ -514,6 +519,10 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         plant.setTempGPIO(tempGPIO);
 
         PlantSummary plantSummary = new PlantSummary(plantName);
+        plantSummary.setStatus(PlantSummary.getStatusModified());
+        plantSummary.setLightGPIO(lightGPIO);
+        plantSummary.setMoistureGPIO(moistureGPIO);
+        plantSummary.setTempGPIO(tempGPIO);
         addPlantToFirebase(plantSummary);
         createPlantMenuItem(plant, false, 0);
     }
@@ -549,7 +558,6 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
         builder.setSmallIcon(R.drawable.potted_plant);
         Notification notification = builder.build();
         notificationManager.notify(0, notification);
-
     }
 
 

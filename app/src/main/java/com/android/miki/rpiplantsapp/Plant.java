@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.Exclude;
+
 /**
  * Created by Miki on 7/22/2016.
  **/

@@ -30,6 +30,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -75,6 +76,7 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
     private DatabaseReference mRootRef = FirebaseDatabase.getInstance().getReference();
     private DatabaseReference mUserPlantsRef = mRootRef.child("userPlants");
     private DatabaseReference mModifiedPlantsRef = mRootRef.child("modifiedPlants");
+    private DatabaseReference mSensorResults = mRootRef.child("sensorResults");
     private final double PERCENT_THRESHOLD = 0.05;
 
 
@@ -146,10 +148,36 @@ public class PlantStatsActivity extends AppCompatActivity implements DialogListe
                 startSettingsActivity();
             }
         });
-        addFirebaseListener();
+        addFirebaseUserPlantsListener();
+        addFirebaseSensorListener();
     }
 
-    private void addFirebaseListener(){
+    private void addFirebaseSensorListener(){
+        mSensorResults.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot sensorResult : dataSnapshot.getChildren()){
+                    if (sensorResult.getKey().equals("light_value")){
+                        sendValueToFragment((double)sensorResult.getValue(Double.class), lightKey);
+                    }
+                    if (sensorResult.getKey().equals("moisture_value")){
+                        sendValueToFragment((double)sensorResult.getValue(Double.class), moistureKey);
+                    }
+                    if (sensorResult.getKey().equals("temp_value")){
+                        sendValueToFragment((double)sensorResult.getValue(Double.class), tempKey);
+                    }
+                }
+
+                int i =3;
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+    private void addFirebaseUserPlantsListener(){
         mUserPlantsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {

@@ -123,15 +123,8 @@ def start_sensors():
         refresh_rate = firebase_root.get('/settings', 'refreshRate')
         print("Starting check_for_plants()")
         check_for_plants(refresh_rate)
-        '''
-        global refresh_paredicate
-        refresh_predicate = lambda str : str == 'modified'
-        try:
-            wait(refresh_predicate, timeout_seconds=refresh_rate)
-        except TimeoutExpired:
-            # user plants have not been modified
-            pass
-        '''
+      
+       
 
 def check_for_plants(refresh_rate):
     print ("Checking for plants")
@@ -160,23 +153,5 @@ def check_for_plants(refresh_rate):
             seconds_slept += 2
             time.sleep(2)
 
-'''
-def check_for_plants(self):
-    while True:
-        print("Checking for plants")
-        modded_plants = firebase_root.get('/modifiedPlants', '')
-        print(modded_plants)
-        for plant, properties in modded_plants.items():
-            print properties['status']
-            if properties['status'] == 'modified':
-                condition.notify()
-                print("Notified")
 
-condition = threading.Condition()
-t_sensors = threading.Thread(target=start_sensors, args=(condition,))
-t_checker = threading.Thread(target=check_for_plants, args=(condition,))
-condition.acquire()
-t_sensors.start()
-t_checker.start()
-'''
 start_sensors()
